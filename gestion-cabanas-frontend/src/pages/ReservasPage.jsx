@@ -137,6 +137,33 @@ export default function ReservasPage() {
         cargarMaestros();
     }, []);
 
+    // ⭐ Calcular precio automáticamente cuando cambian fechas o tipo de habitación
+    useEffect(() => {
+        if (!tipoHabitacionId || !checkIn || !checkOut) {
+            return;
+        }
+
+        const tipo = tiposHabitacion.find(t => t.id === Number(tipoHabitacionId));
+        if (!tipo || !tipo.precioNoche || tipo.precioNoche <= 0) {
+            return;
+        }
+
+        const fechaCheckIn = new Date(checkIn);
+        const fechaCheckOut = new Date(checkOut);
+
+        if (fechaCheckOut <= fechaCheckIn) {
+            return;
+        }
+
+        const diffTime = fechaCheckOut.getTime() - fechaCheckIn.getTime();
+        const cantidadNoches = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (cantidadNoches > 0) {
+            const nuevoPrecio = tipo.precioNoche * cantidadNoches;
+            setPrecioTotal(nuevoPrecio);
+        }
+    }, [tipoHabitacionId, checkIn, checkOut, tiposHabitacion]);
+
     function limpiarFormulario() {
         setHotelId("");
         setTipoHabitacionId("");
@@ -1047,6 +1074,41 @@ export default function ReservasPage() {
                                         <label className="crud-form-label">Comentarios del cliente</label>
                                         <textarea value={comentariosCliente} onChange={(e) => setComentariosCliente(e.target.value)} rows={3} className="crud-form-textarea" />
                                     </div>
+
+                                    {/* Indicador de cálculo de precio */}
+                                    {(() => {
+                                        const tipo = tiposHabitacion.find(t => t.id === Number(tipoHabitacionId));
+                                        if (tipo && tipo.precioNoche > 0 && checkIn && checkOut) {
+                                            const fechaCheckIn = new Date(checkIn);
+                                            const fechaCheckOut = new Date(checkOut);
+                                            if (fechaCheckOut > fechaCheckIn) {
+                                                const diffTime = fechaCheckOut.getTime() - fechaCheckIn.getTime();
+                                                const cantidadNoches = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                                if (cantidadNoches > 0) {
+                                                    return (
+                                                        <div style={{
+                                                            gridColumn: '1 / -1',
+                                                            padding: '12px 16px',
+                                                            backgroundColor: '#ecfdf5',
+                                                            border: '1px solid #a7f3d0',
+                                                            borderRadius: '8px',
+                                                            fontSize: '14px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '8px',
+                                                            color: '#065f46'
+                                                        }}>
+                                                            <span style={{ fontSize: '18px' }}>💡</span>
+                                                            <span>
+                                                                <strong>{cantidadNoches} {cantidadNoches === 1 ? 'noche' : 'noches'}</strong> × ${tipo.precioNoche.toLocaleString('es-AR')} = <strong>${(tipo.precioNoche * cantidadNoches).toLocaleString('es-AR')}</strong>
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                }
+                                            }
+                                        }
+                                        return null;
+                                    })()}
                                 </div>
 
                                 {/* Botones Disponibilidad */}
@@ -1074,6 +1136,25 @@ export default function ReservasPage() {
 
                                 {dispMsg && <p style={{ marginBottom: "8px", color: "#374151", fontSize: '14px', fontWeight: '500' }}>{dispMsg}</p>}
                                 {hotelDispError && <p style={{ marginBottom: "8px", color: "#ef4444", fontSize: '14px' }}>{hotelDispError}</p>}
+
+                                {/* Mensaje de error al crear reserva */}
+                                {error && (
+                                    <div style={{
+                                        marginBottom: "16px",
+                                        padding: "12px 16px",
+                                        backgroundColor: "#fef2f2",
+                                        border: "1px solid #fecaca",
+                                        borderRadius: "8px",
+                                        color: "#dc2626",
+                                        fontSize: "14px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "8px"
+                                    }}>
+                                        <span style={{ fontSize: "18px" }}>⚠️</span>
+                                        <span>{error}</span>
+                                    </div>
+                                )}
 
                                 <div className="crud-modal-footer">
                                     <button type="button" className="crud-btn-cancel" onClick={handleCloseModal}>

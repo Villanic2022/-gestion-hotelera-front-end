@@ -26,6 +26,7 @@ export default function TiposHabitacionPage() {
     const [nombre, setNombre] = useState("");
     const [descripcion, setDescripcion] = useState("");
     const [capacidad, setCapacidad] = useState(2);
+    const [precioNoche, setPrecioNoche] = useState("");
     const [activo, setActivo] = useState(true);
     const [editingId, setEditingId] = useState(null);
 
@@ -62,6 +63,7 @@ export default function TiposHabitacionPage() {
         setNombre("");
         setDescripcion("");
         setCapacidad(2);
+        setPrecioNoche("");
         setActivo(true);
         setEditingId(null);
     }
@@ -77,6 +79,7 @@ export default function TiposHabitacionPage() {
         setNombre(tipo.nombre);
         setDescripcion(tipo.descripcion || "");
         setCapacidad(tipo.capacidadMax || tipo.capacidad || 2);
+        setPrecioNoche(tipo.precioNoche !== undefined ? String(tipo.precioNoche) : "");
         setActivo(tipo.activo !== undefined ? tipo.activo : true);
         setShowModal(true);
     }
@@ -96,6 +99,7 @@ export default function TiposHabitacionPage() {
             nombre,
             descripcion,
             capacidad: Number(capacidad),
+            precioNoche: precioNoche ? Number(precioNoche) : 0,
             activo,
             // Enviar también con los nombres que vienen del backend por si acaso
             capacidadMax: Number(capacidad),
@@ -216,6 +220,14 @@ export default function TiposHabitacionPage() {
                                             <span className="crud-card-field-icon">👥</span>
                                             <span className="crud-card-field-text">Capacidad: {tipo.capacidadMax || tipo.capacidad} {(tipo.capacidadMax || tipo.capacidad) === 1 ? 'persona' : 'personas'}</span>
                                         </div>
+                                        {tipo.precioNoche > 0 && (
+                                            <div className="crud-card-field">
+                                                <span className="crud-card-field-icon">💰</span>
+                                                <span className="crud-card-field-text" style={{ fontWeight: '600', color: '#059669' }}>
+                                                    ${tipo.precioNoche.toLocaleString('es-AR')} / noche
+                                                </span>
+                                            </div>
+                                        )}
                                         {tipo.descripcion && (
                                             <div className="crud-card-field">
                                                 <span className="crud-card-field-icon">📝</span>
@@ -309,6 +321,19 @@ export default function TiposHabitacionPage() {
                                                 onChange={(e) => setCapacidad(e.target.value)}
                                                 required
                                                 className="crud-form-input"
+                                            />
+                                        </div>
+
+                                        <div className="crud-form-group">
+                                            <label className="crud-form-label">Precio por noche</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={precioNoche}
+                                                onChange={(e) => setPrecioNoche(e.target.value)}
+                                                className="crud-form-input"
+                                                placeholder="Ej: 50000"
                                             />
                                         </div>
 
