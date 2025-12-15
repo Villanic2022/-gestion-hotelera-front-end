@@ -16,6 +16,7 @@ import { getHoteles } from "../api/hoteles";
 import { getTiposHabitacion } from "../api/tipohabitacion";
 import { getHabitaciones } from "../api/habitaciones";
 import { getHuespedes, crearHuesped } from "../api/huespedes";
+import { emitirFactura } from "../api/facturas";
 import { useToast } from "../context/ToastContext";
 import "../styles/crud.css";
 
@@ -99,6 +100,18 @@ export default function ReservasPage() {
     const [filtroEstadoPago, setFiltroEstadoPago] = useState("");
     const [filtroCheckInDesde, setFiltroCheckInDesde] = useState("");
     const [filtroCheckInHasta, setFiltroCheckInHasta] = useState("");
+
+    // ⭐ Modal emitir factura
+    const [mostrarFactura, setMostrarFactura] = useState(false);
+    const [facturaReservaId, setFacturaReservaId] = useState(null);
+    const [facturaTipoComprobante, setFacturaTipoComprobante] = useState("B");
+    const [facturaPuntoVenta, setFacturaPuntoVenta] = useState(1);
+    const [facturaTipoDocumento, setFacturaTipoDocumento] = useState("DNI");
+    const [facturaDocumento, setFacturaDocumento] = useState("");
+    const [facturaImporte, setFacturaImporte] = useState("");
+    const [emitiendo, setEmitiendo] = useState(false);
+    const [facturaError, setFacturaError] = useState("");
+    const [facturaResultado, setFacturaResultado] = useState(null);
 
     async function cargarReservas() {
         try {
@@ -600,6 +613,76 @@ export default function ReservasPage() {
         setFiltroCheckInHasta("");
     }
 
+    // ⭐ Abrir modal de factura
+    function handleAbrirFactura(reserva) {
+        const huesped = huespedes.find(h => h.id === reserva.huespedTitularId);
+        setFacturaReservaId(reserva.id);
+        setFacturaTipoComprobante("B");
+        setFacturaPuntoVenta(1);
+        setFacturaTipoDocumento(huesped?.tipoDocumento || "DNI");
+        setFacturaDocumento(huesped?.numeroDocumento || "");
+        setFacturaImporte(reserva.precioTotal ? String(reserva.precioTotal) : "");
+        setFacturaError("");
+        setFacturaResultado(null);
+        setMostrarFactura(true);
+    }
+
+    function handleCerrarFactura() {
+        setMostrarFactura(false);
+        setFacturaReservaId(null);
+        setFacturaTipoComprobante("B");
+        setFacturaPuntoVenta(1);
+        setFacturaTipoDocumento("DNI");
+        setFacturaDocumento("");
+        setFacturaImporte("");
+        setFacturaError("");
+        setFacturaResultado(null);
+    }
+
+    // ⭐ Emitir factura
+    async function handleEmitirFactura(e) {
+        e.preventDefault();
+        setFacturaError("");
+        setFacturaResultado(null);
+
+        const importe = Number(facturaImporte);
+        if (Number.isNaN(importe) || importe <= 0) {
+            setFacturaError("Importe inválido");
+            return;
+        }
+
+        if (!facturaDocumento.trim()) {
+            setFacturaError("Ingresa el documento del receptor");
+            return;
+        }
+
+        const payload = {
+            reservaId: facturaReservaId,
+            tipoComprobante: facturaTipoComprobante,
+            puntoVenta: facturaPuntoVenta,
+            tipoDocumento: facturaTipoDocumento,
+            documento: facturaDocumento.trim(),
+            importe: importe
+        };
+
+        try {
+            setEmitiendo(true);
+            const resultado = await emitirFactura(payload);
+            setFacturaResultado(resultado);
+            showToast("success", "Factura emitida exitosamente");
+        } catch (err) {
+            console.error("ERROR EMITIR FACTURA:", err);
+            const mensajeBackend =
+                err?.response?.data?.message ||
+                err?.response?.data?.error ||
+                (typeof err?.response?.data === "string" ? err.response.data : "") ||
+                "No se pudo emitir la factura";
+            setFacturaError(mensajeBackend);
+        } finally {
+            setEmitiendo(false);
+        }
+    }
+
     return (
         <Layout>
             <div className="crud-container">
@@ -933,6 +1016,20 @@ export default function ReservasPage() {
                                                     >
                                                         ✈️
                                                     </button>
+                                                    {r.estado === "CONFIRMADA" && (
+                                                        <button
+                                                            onClick={() => handleAbrirFactura(r)}
+                                                            className="crud-btn-action"
+                                                            style={{
+                                                                padding: '6px 10px',
+                                                                fontSize: '11px',
+                                                                backgroundColor: '#10b981'
+                                                            }}
+                                                            title="Emitir Factura"
+                                                        >
+                                                            🧾
+                                                        </button>
+                                                    )}
                                                     <button
                                                         onClick={() => handleCancelarReserva(r.id)}
                                                         className="crud-btn-action crud-btn-delete"
@@ -1447,6 +1544,194 @@ export default function ReservasPage() {
                                     {cancelandoReserva ? "Cancelando..." : "🗑️ Cancelar Reserva"}
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Modal Emitir Factura */}
+                {mostrarFactura && (
+                    <div className="crud-modal-overlay">
+                        <div className="crud-modal" style={{ maxWidth: "500px" }}>
+                            <div className="crud-modal-header">
+                                <h2>🧾 Emitir Factura</h2>
+                                <button className="crud-modal-close" onClick={handleCerrarFactura}>&times;</button>
+                            </div>
+                            <p style={{ fontSize: "13px", marginBottom: "16px", color: '#6b7280' }}>
+                                Reserva #{facturaReservaId}
+                            </p>
+
+                            {/* Si ya emitió factura, mostrar resultado */}
+                            {facturaResultado ? (
+                                <div style={{ padding: '0 0 20px 0' }}>
+                                    <div style={{
+                                        backgroundColor: '#ecfdf5',
+                                        border: '1px solid #a7f3d0',
+                                        borderRadius: '12px',
+                                        padding: '20px',
+                                        marginBottom: '16px'
+                                    }}>
+                                        <h3 style={{ color: '#065f46', fontSize: '16px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            ✅ Factura Emitida Exitosamente
+                                        </h3>
+                                        <div style={{ display: 'grid', gap: '12px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #d1fae5', paddingBottom: '8px' }}>
+                                                <span style={{ color: '#6b7280', fontSize: '14px' }}>CAE:</span>
+                                                <span style={{ color: '#065f46', fontWeight: '700', fontSize: '16px', fontFamily: 'monospace' }}>{facturaResultado.cae}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #d1fae5', paddingBottom: '8px' }}>
+                                                <span style={{ color: '#6b7280', fontSize: '14px' }}>Número Comprobante:</span>
+                                                <span style={{ color: '#065f46', fontWeight: '600', fontSize: '14px' }}>
+                                                    {String(facturaResultado.puntoVenta).padStart(5, '0')}-{String(facturaResultado.numeroComprobante).padStart(8, '0')}
+                                                </span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #d1fae5', paddingBottom: '8px' }}>
+                                                <span style={{ color: '#6b7280', fontSize: '14px' }}>Tipo Comprobante:</span>
+                                                <span style={{ color: '#374151', fontWeight: '500', fontSize: '14px' }}>Factura {facturaResultado.tipoComprobante}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #d1fae5', paddingBottom: '8px' }}>
+                                                <span style={{ color: '#6b7280', fontSize: '14px' }}>Importe Total:</span>
+                                                <span style={{ color: '#374151', fontWeight: '600', fontSize: '14px' }}>${facturaResultado.importeTotal?.toLocaleString('es-AR')} {facturaResultado.moneda}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #d1fae5', paddingBottom: '8px' }}>
+                                                <span style={{ color: '#6b7280', fontSize: '14px' }}>Fecha Emisión:</span>
+                                                <span style={{ color: '#374151', fontSize: '14px' }}>{new Date(facturaResultado.fechaEmision).toLocaleString('es-AR')}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: '#fef3c7', padding: '10px', borderRadius: '8px', marginTop: '8px' }}>
+                                                <span style={{ color: '#92400e', fontSize: '14px', fontWeight: '500' }}>⚠️ Vencimiento CAE:</span>
+                                                <span style={{ color: '#92400e', fontWeight: '700', fontSize: '14px' }}>{facturaResultado.caeVencimiento}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <span style={{ color: '#6b7280', fontSize: '14px' }}>Estado:</span>
+                                                <span className="crud-badge success" style={{ fontSize: '12px' }}>{facturaResultado.estado}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="crud-modal-footer">
+                                        <button type="button" className="crud-btn-submit" onClick={handleCerrarFactura}>
+                                            Cerrar
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleEmitirFactura} className="crud-form">
+                                    <div className="crud-form-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                                        <div className="crud-form-group">
+                                            <label className="crud-form-label">Tipo Comprobante</label>
+                                            <select
+                                                value={facturaTipoComprobante}
+                                                onChange={(e) => setFacturaTipoComprobante(e.target.value)}
+                                                className="crud-form-select"
+                                                required
+                                            >
+                                                <option value="B">Factura B</option>
+                                                <option value="C">Factura C</option>
+                                            </select>
+                                        </div>
+                                        <div className="crud-form-group">
+                                            <label className="crud-form-label">Punto de Venta</label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={facturaPuntoVenta}
+                                                onChange={(e) => setFacturaPuntoVenta(Number(e.target.value))}
+                                                className="crud-form-input"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="crud-form-group">
+                                            <label className="crud-form-label">Tipo Documento Receptor</label>
+                                            <select
+                                                value={facturaTipoDocumento}
+                                                onChange={(e) => setFacturaTipoDocumento(e.target.value)}
+                                                className="crud-form-select"
+                                                required
+                                            >
+                                                <option value="DNI">DNI</option>
+                                                <option value="CUIT">CUIT</option>
+                                            </select>
+                                        </div>
+                                        <div className="crud-form-group">
+                                            <label className="crud-form-label">Documento</label>
+                                            <input
+                                                type="text"
+                                                value={facturaDocumento}
+                                                onChange={(e) => setFacturaDocumento(e.target.value)}
+                                                placeholder="Ej: 30123456"
+                                                className="crud-form-input"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="crud-form-group" style={{ gridColumn: '1 / -1' }}>
+                                            <label className="crud-form-label">Importe</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={facturaImporte}
+                                                onChange={(e) => setFacturaImporte(e.target.value)}
+                                                className="crud-form-input"
+                                                required
+                                            />
+                                            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+                                                💡 Importe sugerido basado en el precio total de la reserva
+                                            </p>
+                                        </div>
+                                    </div>
+
+
+                                    {facturaError && (
+                                        facturaError.includes("ya tiene una factura emitida") ? (
+                                            <div style={{
+                                                marginTop: "12px",
+                                                padding: "16px",
+                                                backgroundColor: "#eff6ff",
+                                                border: "1px solid #bfdbfe",
+                                                borderRadius: "8px",
+                                                color: "#1e40af",
+                                                fontSize: "14px"
+                                            }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                                    <span style={{ fontSize: '20px' }}>ℹ️</span>
+                                                    <strong>Esta reserva ya tiene una factura emitida</strong>
+                                                </div>
+                                                <p style={{ margin: 0, color: '#3b82f6', fontSize: '13px' }}>
+                                                    Consultá el historial de facturas para ver los detalles del comprobante.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div style={{
+                                                marginTop: "12px",
+                                                padding: "12px 16px",
+                                                backgroundColor: "#fef2f2",
+                                                border: "1px solid #fecaca",
+                                                borderRadius: "8px",
+                                                color: "#dc2626",
+                                                fontSize: "14px",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: "8px"
+                                            }}>
+                                                <span>⚠️</span>
+                                                <span>{facturaError}</span>
+                                            </div>
+                                        )
+                                    )}
+
+                                    <div className="crud-modal-footer" style={{ marginTop: '20px' }}>
+                                        <button type="button" className="crud-btn-cancel" onClick={handleCerrarFactura}>
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="crud-btn-submit"
+                                            disabled={emitiendo}
+                                            style={{ backgroundColor: '#10b981' }}
+                                        >
+                                            {emitiendo ? "Emitiendo..." : "🧾 Emitir Factura"}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
                         </div>
                     </div>
                 )}

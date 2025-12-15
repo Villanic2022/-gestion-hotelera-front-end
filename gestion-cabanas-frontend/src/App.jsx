@@ -9,6 +9,7 @@ import TiposHabitacionPage from "./pages/TiposHabitacionPage";
 import HabitacionesPage from "./pages/HabitacionesPage";
 import HuespedesPage from "./pages/HuespedesPage";
 import ReservasPage from "./pages/ReservasPage";
+import FacturasPage from "./pages/FacturasPage";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ToastProvider } from "./context/ToastContext";
@@ -80,6 +81,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <ReservasPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/facturas"
+            element={
+              <ProtectedRoute>
+                <FacturasPage />
               </ProtectedRoute>
             }
           />

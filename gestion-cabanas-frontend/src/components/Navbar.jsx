@@ -35,8 +35,8 @@ export default function Navbar() {
             }}
         >
             {/* LOGO / NOMBRE DEL SISTEMA */}
-            <div style={{ 
-                fontWeight: "bold", 
+            <div style={{
+                fontWeight: "bold",
                 fontSize: "20px",
                 display: "flex",
                 alignItems: "center",
@@ -49,9 +49,9 @@ export default function Navbar() {
             <nav style={{ display: "flex", gap: "0", alignItems: "center" }}>
                 <Link
                     to="/dashboard"
-                    style={{ 
-                        color: "white", 
-                        textDecoration: "none", 
+                    style={{
+                        color: "white",
+                        textDecoration: "none",
                         fontSize: "14px",
                         fontWeight: "500",
                         padding: "8px 16px",
@@ -73,9 +73,9 @@ export default function Navbar() {
 
                 <Link
                     to="/hoteles"
-                    style={{ 
-                        color: "white", 
-                        textDecoration: "none", 
+                    style={{
+                        color: "white",
+                        textDecoration: "none",
                         fontSize: "14px",
                         fontWeight: "500",
                         padding: "8px 16px",
@@ -98,9 +98,9 @@ export default function Navbar() {
                 {/* 👇 NUEVO LINK */}
                 <Link
                     to="/tipos-habitacion"
-                    style={{ 
-                        color: "white", 
-                        textDecoration: "none", 
+                    style={{
+                        color: "white",
+                        textDecoration: "none",
                         fontSize: "14px",
                         fontWeight: "500",
                         padding: "8px 16px",
@@ -122,9 +122,9 @@ export default function Navbar() {
 
                 <Link
                     to="/habitaciones"
-                    style={{ 
-                        color: "white", 
-                        textDecoration: "none", 
+                    style={{
+                        color: "white",
+                        textDecoration: "none",
                         fontSize: "14px",
                         fontWeight: "500",
                         padding: "8px 16px",
@@ -146,9 +146,9 @@ export default function Navbar() {
 
                 <Link
                     to="/huespedes"
-                    style={{ 
-                        color: "white", 
-                        textDecoration: "none", 
+                    style={{
+                        color: "white",
+                        textDecoration: "none",
                         fontSize: "14px",
                         fontWeight: "500",
                         padding: "8px 16px",
@@ -170,9 +170,9 @@ export default function Navbar() {
 
                 <Link
                     to="/reservas"
-                    style={{ 
-                        color: "white", 
-                        textDecoration: "none", 
+                    style={{
+                        color: "white",
+                        textDecoration: "none",
                         fontSize: "14px",
                         fontWeight: "500",
                         padding: "8px 16px",
@@ -192,9 +192,33 @@ export default function Navbar() {
                     Reservas
                 </Link>
 
+                <Link
+                    to="/facturas"
+                    style={{
+                        color: "white",
+                        textDecoration: "none",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        padding: "8px 16px",
+                        borderRadius: "8px",
+                        transition: "all 0.2s ease",
+                        backgroundColor: "transparent"
+                    }}
+                    onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                        e.target.style.transform = "translateY(-1px)";
+                    }}
+                    onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = "transparent";
+                        e.target.style.transform = "translateY(0)";
+                    }}
+                >
+                    Facturas
+                </Link>
+
                 {/* Usuario + botón salir */}
-                <span style={{ 
-                    marginLeft: "24px", 
+                <span style={{
+                    marginLeft: "24px",
                     fontSize: "14px",
                     fontWeight: "500",
                     opacity: "0.9"
