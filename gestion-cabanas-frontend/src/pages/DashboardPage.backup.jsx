@@ -47,6 +47,9 @@ export default function DashboardPage() {
         cargarMaestros();
     }, []);
 
+    function safeArray(value) {
+        return Array.isArray(value) ? value : [];
+    }
     async function cargarMaestros() {
         try {
             const [hotelesResp, tiposResp, habsResp] = await Promise.all([
@@ -68,10 +71,13 @@ export default function DashboardPage() {
             setError("");
 
             // Cargar datos en paralelo
-            const [reservas, habitaciones] = await Promise.all([
+            const [reservasResp, habitacionesResp] = await Promise.all([
                 getReservas(),
                 getHabitaciones(),
             ]);
+
+            const reservas = safeArray(reservasResp);
+            const habitaciones = safeArray(habitacionesResp);
 
             // Calcular métricas
             const hoy = new Date().toISOString().split('T')[0];
@@ -126,7 +132,7 @@ export default function DashboardPage() {
         try {
             setCheckingDisp(true);
             setDispMsg("");
-            
+
             console.log("Verificando disponibilidad con datos:", {
                 habitacionId: Number(habitacionId),
                 checkIn,
@@ -134,7 +140,7 @@ export default function DashboardPage() {
                 adultos: Number(adultos),
                 ninos: Number(ninos)
             });
-            
+
             const data = await checkDisponibilidadHabitacion({
                 habitacionId: Number(habitacionId),
                 checkIn,
@@ -142,9 +148,9 @@ export default function DashboardPage() {
                 adultos: Number(adultos),
                 ninos: Number(ninos),
             });
-            
+
             console.log("Respuesta de la API:", data);
-            
+
             if (data?.disponible) {
                 setDispMsg(`✅ La habitación está disponible. Precio: ${data.precio || 'N/A'}`);
                 showToast("success", "Habitación disponible");
@@ -155,7 +161,7 @@ export default function DashboardPage() {
         } catch (err) {
             console.error("ERROR DISPONIBILIDAD:", err);
             console.error("Error completo:", err.response?.data);
-            
+
             let mensajeError = "Error al verificar disponibilidad";
             if (err?.response?.status === 400) {
                 mensajeError = "Datos inválidos. Verifica las fechas y la habitación seleccionada.";
@@ -164,7 +170,7 @@ export default function DashboardPage() {
             } else if (err?.response?.data?.message) {
                 mensajeError = err.response.data.message;
             }
-            
+
             setDispMsg(`❌ ${mensajeError}`);
             showToast("error", mensajeError);
         } finally {
@@ -201,7 +207,7 @@ export default function DashboardPage() {
         console.log('=== INICIANDO cargarCalendarioDisponibilidad ===');
         console.log('hotelId:', hotelId);
         console.log('habitacionId:', habitacionId);
-        
+
         if (!hotelId) {
             console.log('ERROR: No hay hotelId seleccionado');
             showToast("error", "Selecciona un hotel primero");
@@ -212,19 +218,21 @@ export default function DashboardPage() {
             setLoadingCalendario(true);
             setHotelDispError("");
             console.log('Iniciando carga de datos...');
-            
+
             // Obtener todas las reservas
-            const reservas = await getReservas();
+            const reservasResp = await getReservas();
+            const reservas = safeArray(reservasResp);
+
             console.log('Reservas obtenidas:', reservas.length);
-            
+
             const habitacionesHotel = habitaciones.filter(h => h.hotelId === parseInt(hotelId));
-            
+
             if (habitacionId) {
                 // Modo habitación individual
-                const reservasFiltradas = reservas.filter(r => 
+                const reservasFiltradas = reservas.filter(r =>
                     r.habitacionId === parseInt(habitacionId) && r.estado !== 'CANCELADA'
                 );
-                
+
                 const habitacionSeleccionada = habitaciones.find(h => h.id === parseInt(habitacionId));
                 const tipoHab = tiposHabitacion.find(t => t.id === habitacionSeleccionada?.tipoHabitacionId);
                 const nombreTipo = tipoHab?.nombre || habitacionSeleccionada?.tipoHabitacion?.nombre || 'Cabaña';
@@ -255,12 +263,12 @@ export default function DashboardPage() {
                     const tipoHab = tiposHabitacion.find(t => t.id === habitacion.tipoHabitacionId);
                     const nombreTipo = tipoHab?.nombre || 'Cabaña';
                     const titulo = `${nombreTipo} ${habitacion.numero || habitacion.codigo || habitacion.id}`;
-                    
+
                     // Reservas para esta habitación específica
-                    const reservasHabitacion = reservas.filter(r => 
+                    const reservasHabitacion = reservas.filter(r =>
                         r.habitacionId === habitacion.id && r.estado !== 'CANCELADA'
                     );
-                    
+
                     // Fechas ocupadas para esta habitación
                     const fechasOcupadas = new Set();
                     reservasHabitacion.forEach(reserva => {
@@ -272,7 +280,7 @@ export default function DashboardPage() {
                             fecha.setDate(fecha.getDate() + 1);
                         }
                     });
-                    
+
                     return {
                         habitacionId: habitacion.id,
                         titulo,
@@ -293,9 +301,9 @@ export default function DashboardPage() {
                     }).length
                 });
             }
-            
+
             console.log('✅ Calendario data configurado exitosamente');
-            
+
         } catch (err) {
             console.error("❌ ERROR CALENDARIO:", err);
             setHotelDispError("Error al cargar el calendario de disponibilidad");
@@ -319,17 +327,17 @@ export default function DashboardPage() {
         const primerDia = new Date(año, mes, 1);
         const ultimoDia = new Date(año, mes + 1, 0);
         const primerDiaSemana = primerDia.getDay(); // 0 = domingo
-        
+
         const dias = [];
-        
+
         // Días vacíos al inicio
         for (let i = 0; i < primerDiaSemana; i++) {
             dias.push(null);
         }
-        
+
         // Determinar qué fechas ocupadas usar
         const fechasOcupadas = fechasOcupadasHabitacion || calendarioData?.fechasOcupadas || [];
-        
+
         // Días del mes
         for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
             const fecha = new Date(año, mes, dia);
@@ -337,7 +345,7 @@ export default function DashboardPage() {
             const esHoy = fechaStr === new Date().toISOString().split('T')[0];
             const esPasado = fecha < new Date().setHours(0, 0, 0, 0);
             const estaOcupada = fechasOcupadas.includes(fechaStr);
-            
+
             dias.push({
                 dia,
                 fecha: fechaStr,
@@ -347,7 +355,7 @@ export default function DashboardPage() {
                 disponible: !estaOcupada && !esPasado
             });
         }
-        
+
         return dias;
     };
     const habitacionesFiltradas = habitaciones.filter((h) => {
@@ -595,11 +603,11 @@ export default function DashboardPage() {
                                             </button>
                                         </div>
                                         {hotelDispError && (
-                                            <div style={{ 
-                                                marginTop: "15px", 
-                                                padding: "10px", 
-                                                backgroundColor: "#fee2e2", 
-                                                color: "#991b1b", 
+                                            <div style={{
+                                                marginTop: "15px",
+                                                padding: "10px",
+                                                backgroundColor: "#fee2e2",
+                                                color: "#991b1b",
                                                 borderRadius: "8px",
                                                 fontSize: "14px",
                                                 textAlign: "center"
@@ -608,10 +616,10 @@ export default function DashboardPage() {
                                             </div>
                                         )}
                                         {hotelDispData && (
-                                            <div style={{ 
-                                                marginTop: "15px", 
-                                                padding: "15px", 
-                                                backgroundColor: "#d1fae5", 
+                                            <div style={{
+                                                marginTop: "15px",
+                                                padding: "15px",
+                                                backgroundColor: "#d1fae5",
                                                 borderRadius: "8px",
                                                 border: "1px solid #10b981"
                                             }}>
@@ -624,9 +632,9 @@ export default function DashboardPage() {
                                                             const tipoHab = tiposHabitacion.find(t => t.id === hab.tipoHabitacionId);
                                                             const nombreTipo = tipoHab?.nombre || 'Habitación';
                                                             return (
-                                                                <div key={hab.id} style={{ 
-                                                                    padding: "8px 12px", 
-                                                                    backgroundColor: "white", 
+                                                                <div key={hab.id} style={{
+                                                                    padding: "8px 12px",
+                                                                    backgroundColor: "white",
                                                                     borderRadius: "6px",
                                                                     fontSize: "14px",
                                                                     display: "flex",
@@ -667,20 +675,20 @@ export default function DashboardPage() {
                                     <div>
                                         {/* Título del calendario */}
                                         <div style={{ textAlign: "center", marginBottom: "20px" }}>
-                                            <h3 style={{ 
-                                                fontSize: "18px", 
-                                                fontWeight: "600", 
+                                            <h3 style={{
+                                                fontSize: "18px",
+                                                fontWeight: "600",
                                                 color: "#374151",
-                                                margin: "0 0 8px 0" 
+                                                margin: "0 0 8px 0"
                                             }}>
                                                 📅 {calendarioData.titulo}
                                             </h3>
-                                            <p style={{ 
-                                                fontSize: "14px", 
-                                                color: "#6b7280", 
-                                                margin: 0 
+                                            <p style={{
+                                                fontSize: "14px",
+                                                color: "#6b7280",
+                                                margin: 0
                                             }}>
-                                                {calendarioData.tipo === 'individual' ? 
+                                                {calendarioData.tipo === 'individual' ?
                                                     `${calendarioData.reservasActivas} reservas activas en esta habitación` :
                                                     `${calendarioData.reservasActivas} reservas activas • ${calendarioData.totalHabitaciones} habitaciones totales`
                                                 }
@@ -727,9 +735,9 @@ export default function DashboardPage() {
                                         </div>
 
                                         {/* Calendario */}
-                                        <div style={{ 
-                                            display: "grid", 
-                                            gridTemplateColumns: "repeat(7, 1fr)", 
+                                        <div style={{
+                                            display: "grid",
+                                            gridTemplateColumns: "repeat(7, 1fr)",
                                             gap: "2px",
                                             backgroundColor: "#f9fafb",
                                             padding: "15px",
@@ -767,13 +775,13 @@ export default function DashboardPage() {
                                                         fontWeight: dia?.esHoy ? "bold" : "normal",
                                                         backgroundColor: dia ? (
                                                             dia.esPasado ? "#f9fafb" :
-                                                            dia.estaOcupada ? "#fee2e2" :
-                                                            "#d1fae5"
+                                                                dia.estaOcupada ? "#fee2e2" :
+                                                                    "#d1fae5"
                                                         ) : "transparent",
                                                         color: dia ? (
                                                             dia.esPasado ? "#9ca3af" :
-                                                            dia.estaOcupada ? "#991b1b" :
-                                                            "#065f46"
+                                                                dia.estaOcupada ? "#991b1b" :
+                                                                    "#065f46"
                                                         ) : "transparent",
                                                         cursor: dia && !dia.esPasado ? "pointer" : "default",
                                                         border: dia?.esHoy ? "2px solid #f59e0b" : "1px solid transparent",
@@ -781,9 +789,9 @@ export default function DashboardPage() {
                                                     }}
                                                     title={dia ? (
                                                         dia.esHoy ? "Hoy" :
-                                                        dia.esPasado ? "Fecha pasada" :
-                                                        dia.estaOcupada ? "Ocupado" :
-                                                        "Disponible"
+                                                            dia.esPasado ? "Fecha pasada" :
+                                                                dia.estaOcupada ? "Ocupado" :
+                                                                    "Disponible"
                                                     ) : ""}
                                                     onMouseEnter={(e) => {
                                                         if (dia && !dia.esPasado) {
