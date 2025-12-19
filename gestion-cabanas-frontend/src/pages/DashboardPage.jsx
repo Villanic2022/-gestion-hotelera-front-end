@@ -68,10 +68,17 @@ export default function DashboardPage() {
             setError("");
 
             // Cargar datos en paralelo
-            const [reservas, habitaciones] = await Promise.all([
+            // Cargar datos en paralelo
+            const [reservasData, habitacionesData] = await Promise.all([
                 getReservas(),
                 getHabitaciones(),
             ]);
+
+            const reservas = Array.isArray(reservasData) ? reservasData : [];
+            const habitaciones = Array.isArray(habitacionesData) ? habitacionesData : [];
+
+            if (!Array.isArray(reservasData)) console.warn("ALERTA: getReservas no devolvió un array", reservasData);
+            if (!Array.isArray(habitacionesData)) console.warn("ALERTA: getHabitaciones no devolvió un array", habitacionesData);
 
             // Calcular métricas
             const hoy = new Date().toISOString().split('T')[0];
