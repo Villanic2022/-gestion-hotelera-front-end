@@ -667,7 +667,7 @@ export default function ReservasPage() {
             documento: facturaDocumento.trim(),
             importe: importe,
             clienteNombre: facturaClienteNombre
-            
+
         };
 
         try {
@@ -1562,9 +1562,9 @@ export default function ReservasPage() {
                                 <button className="crud-modal-close" onClick={handleCerrarFactura}>&times;</button>
                             </div>
                             <div style={{ fontSize: "13px", marginBottom: "16px", color: '#6b7280' }}>
-    <p style={{ margin: "0 0 4px 0" }}>Reserva #{facturaReservaId}</p>
-    <p style={{ margin: 0, fontWeight: "500", color: "#374151" }}>Cliente: {facturaClienteNombre}</p>
-</div>
+                                <p style={{ margin: "0 0 4px 0" }}>Reserva #{facturaReservaId}</p>
+                                <p style={{ margin: 0, fontWeight: "500", color: "#374151" }}>Cliente: {facturaClienteNombre}</p>
+                            </div>
 
                             {/* Si ya emitió factura, mostrar resultado */}
                             {facturaResultado ? (
@@ -1758,3 +1758,5 @@ const tdStyle = {
     borderBottom: "1px solid #f3f4f6",
     padding: "8px",
 };
+
+
