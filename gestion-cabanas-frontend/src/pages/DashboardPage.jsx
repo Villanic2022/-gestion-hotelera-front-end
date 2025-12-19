@@ -54,9 +54,15 @@ export default function DashboardPage() {
                 getTiposHabitacion(),
                 getHabitaciones(),
             ]);
-            setHoteles(hotelesResp);
-            setTiposHabitacion(tiposResp);
-            setHabitaciones(habsResp);
+
+            if (!Array.isArray(hotelesResp)) console.warn("ALERTA: getHoteles devolvió datos inválidos", hotelesResp);
+            setHoteles(Array.isArray(hotelesResp) ? hotelesResp : []);
+
+            if (!Array.isArray(tiposResp)) console.warn("ALERTA: getTiposHabitacion devolvió datos inválidos", tiposResp);
+            setTiposHabitacion(Array.isArray(tiposResp) ? tiposResp : []);
+
+            if (!Array.isArray(habsResp)) console.warn("ALERTA: getHabitaciones devolvió datos inválidos", habsResp);
+            setHabitaciones(Array.isArray(habsResp) ? habsResp : []);
         } catch (err) {
             console.error("Error cargando maestros:", err);
         }
