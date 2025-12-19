@@ -4,6 +4,10 @@ import api from "./axios";
 // GET /api/habitaciones
 export async function getHabitaciones() {
     const res = await api.get("/habitaciones");
+    if (!Array.isArray(res.data)) {
+        console.error("API Error: getHabitaciones expects array but got:", res.data);
+        return [];
+    }
     return res.data;
 }
 

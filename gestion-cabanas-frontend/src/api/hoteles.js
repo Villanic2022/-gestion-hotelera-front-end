@@ -4,6 +4,10 @@ import api from "./axios";
 // GET /api/hoteles  -> lista de hoteles
 export async function getHoteles() {
     const res = await api.get("/hoteles");
+    if (!Array.isArray(res.data)) {
+        console.error("API Error: getHoteles expects array but got:", res.data);
+        return [];
+    }
     return res.data; // array de hoteles
 }
 

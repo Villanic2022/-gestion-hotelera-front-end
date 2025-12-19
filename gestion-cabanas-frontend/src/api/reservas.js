@@ -4,6 +4,10 @@ import api from "./axios";
 // GET /api/reservas
 export async function getReservas() {
     const res = await api.get("/reservas");
+    if (!Array.isArray(res.data)) {
+        console.error("API Error: getReservas expects array but got:", res.data);
+        return [];
+    }
     return res.data; // array de reservas
 }
 

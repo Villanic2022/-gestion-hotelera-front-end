@@ -4,6 +4,10 @@ import api from "./axios";
 // GET /api/tipos-habitacion
 export async function getTiposHabitacion() {
     const res = await api.get("/tipos-habitacion");
+    if (!Array.isArray(res.data)) {
+        console.error("API Error: getTiposHabitacion expects array but got:", res.data);
+        return [];
+    }
     return res.data; // array
 }
 
