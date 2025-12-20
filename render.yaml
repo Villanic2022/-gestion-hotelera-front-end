@@ -2,9 +2,11 @@ services:
   - type: web
     name: easycheck-frontend
     env: static
-    buildCommand: npm ci && npm run build
+    buildCommand: npm install --no-optional --no-audit --no-fund && npm run build
     staticPublishPath: ./dist
     rootDir: .
     envVars:
       - key: NODE_VERSION
         value: "20"
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=2048"
