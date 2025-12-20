@@ -144,7 +144,7 @@ export default function HabitacionesPage() {
     }
 
     // Filtrar
-    const habitacionesFiltradas = habitaciones.filter(h =>
+    const habitacionesFiltradas = (habitaciones || []).filter(h =>
         h.codigo.toLowerCase().includes(searchTerm.toLowerCase())
     );
 

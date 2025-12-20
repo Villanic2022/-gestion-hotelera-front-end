@@ -72,7 +72,7 @@ export default function FacturasPage() {
 
     // Filtrar facturas
     function obtenerFacturasFiltradas() {
-        return facturas.filter((f) => {
+        return (facturas || []).filter((f) => {
             // Filtro por tipo comprobante
             if (filtroTipoComprobante && f.tipoComprobante !== filtroTipoComprobante) {
                 return false;

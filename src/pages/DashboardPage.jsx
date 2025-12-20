@@ -68,14 +68,10 @@ export default function DashboardPage() {
             setError("");
 
             // Cargar datos en paralelo
-            const [reservasResponse, habitacionesResponse] = await Promise.all([
+            const [reservas, habitaciones] = await Promise.all([
                 getReservas(),
                 getHabitaciones(),
             ]);
-
-            // Validar que los datos sean arrays
-            const reservas = Array.isArray(reservasResponse) ? reservasResponse : [];
-            const habitaciones = Array.isArray(habitacionesResponse) ? habitacionesResponse : [];
 
             // Calcular métricas
             const hoy = new Date().toISOString().split('T')[0];
@@ -337,7 +333,7 @@ export default function DashboardPage() {
                     const titulo = `${nombreTipo} ${habitacion.numero || habitacion.codigo || habitacion.id}`;
 
                     // Reservas para esta habitación específica
-                    const reservasHabitacion = reservas.filter(r =>
+                    const reservasHabitacion = (reservas || []).filter(r =>
                         r.habitacionId === habitacion.id && r.estado !== 'CANCELADA'
                     );
 
@@ -386,7 +382,7 @@ export default function DashboardPage() {
                     titulo: `${hotelSeleccionado?.nombre || 'Hotel'} - Todas las habitaciones`,
                     calendarios: calendariosPorHabitacion,
                     totalHabitaciones: habitacionesHotel.length,
-                    reservasActivas: reservas.filter(r => {
+                    reservasActivas: (reservas || []).filter(r => {
                         const habitacion = habitacionesHotel.find(h => h.id === r.habitacionId);
                         return habitacion && r.estado !== 'CANCELADA';
                     }).length
@@ -419,7 +415,7 @@ export default function DashboardPage() {
 
             // Filtrar reservas para la habitación específica o todas si no se especifica
             const reservasFiltradas = habitacionId
-                ? reservas.filter(r => r.habitacionId === parseInt(habitacionId))
+                ? (reservas || []).filter(r => r.habitacionId === parseInt(habitacionId))
                 : reservas;
 
             // Buscar si hay checkout en esta fecha

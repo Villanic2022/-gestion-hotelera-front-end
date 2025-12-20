@@ -577,7 +577,7 @@ export default function ReservasPage() {
 
     // ⭐ Filtrar reservas según los filtros activos
     function obtenerReservasFiltradas() {
-        return reservas.filter((r) => {
+        return (reservas || []).filter((r) => {
             // Filtro por hotel
             if (filtroHotel && r.hotelId !== Number(filtroHotel)) {
                 return false;

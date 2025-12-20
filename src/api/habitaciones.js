@@ -3,13 +3,8 @@ import api from "./axios";
 
 // GET /api/habitaciones
 export async function getHabitaciones() {
-    try {
-        const res = await api.get("/habitaciones");
-        return Array.isArray(res.data) ? res.data : [];
-    } catch (error) {
-        console.error('Error al cargar habitaciones:', error);
-        return [];
-    }
+    const res = await api.get("/habitaciones");
+    return res.data;
 }
 
 // POST /api/habitaciones

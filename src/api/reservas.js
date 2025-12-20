@@ -3,13 +3,8 @@ import api from "./axios";
 
 // GET /api/reservas
 export async function getReservas() {
-    try {
-        const res = await api.get("/reservas");
-        return Array.isArray(res.data) ? res.data : [];
-    } catch (error) {
-        console.error('Error al cargar reservas:', error);
-        return [];
-    }
+    const res = await api.get("/reservas");
+    return res.data; // array de reservas
 }
 
 // POST /api/reservas
