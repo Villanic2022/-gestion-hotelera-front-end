@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "/api",
+    baseURL: process.env.NODE_ENV === 'production' 
+        ? "https://gestion-hotelera-47wa.onrender.com/api" 
+        : "http://localhost:8080/api",
 });
 
 // Interceptor: agrega el JWT a cada request
