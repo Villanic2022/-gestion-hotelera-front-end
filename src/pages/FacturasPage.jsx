@@ -6,6 +6,25 @@ import { useToast } from "../context/ToastContext";
 import jsPDF from "jspdf";
 import "../styles/crud.css";
 
+// Estilos adicionales para los botones del modal
+const modalButtonStyles = `
+    .modal-pdf-btn:hover {
+        background-color: #059669 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    .modal-print-btn:hover {
+        background-color: #2563eb !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    .modal-close-btn:hover {
+        background-color: #4b5563 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+    }
+`;
+
 export default function FacturasPage() {
     const { showToast } = useToast();
     const [facturas, setFacturas] = useState([]);
@@ -24,6 +43,16 @@ export default function FacturasPage() {
 
     useEffect(() => {
         cargarFacturas();
+        
+        // Agregar estilos CSS para los botones del modal
+        const style = document.createElement('style');
+        style.textContent = modalButtonStyles;
+        document.head.appendChild(style);
+        
+        // Cleanup: remover estilos cuando el componente se desmonte
+        return () => {
+            document.head.removeChild(style);
+        };
     }, []);
 
     async function cargarFacturas() {
@@ -961,41 +990,80 @@ async function generarPDF(factura) {
                                     )}
                                 </div>
                             </div>
-                            <div className="crud-modal-footer" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                            <div className="crud-modal-footer" style={{ 
+                                display: 'flex', 
+                                gap: '12px', 
+                                justifyContent: 'center',
+                                padding: '20px',
+                                borderTop: '1px solid #e5e7eb',
+                                backgroundColor: '#f9fafb'
+                            }}>
                                 <button
                                     type="button"
                                     onClick={() => generarPDF(facturaSeleccionada)}
-                                    className="crud-btn-action"
+                                    className="crud-btn-action modal-pdf-btn"
                                     style={{
-                                        padding: '10px 20px',
+                                        padding: '12px 24px',
                                         fontSize: '14px',
+                                        fontWeight: '600',
                                         backgroundColor: '#10b981',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '8px',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '8px'
+                                        gap: '8px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s ease',
+                                        minWidth: '150px',
+                                        justifyContent: 'center'
                                     }}
                                 >
                                     📥 Descargar PDF
                                 </button>
-                            <button
-                                type="button"
-                                onClick={() => imprimirFactura(facturaSeleccionada)}
-                                className="crud-btn-action"
-                                style={{
-                                    padding: '10px 20px',
-                                    fontSize: '14px',
-                                    backgroundColor: '#3b82f6',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px'
-                                }}
-                            >
-                                🖨️ Imprimir
-                            </button>
-                            <button type="button" className="crud-btn-submit" onClick={() => setFacturaSeleccionada(null)} style={{ backgroundColor: '#f59e0b' }}>
-                                Cerrar
-                            </button>
-                        </div>
+                                <button
+                                    type="button"
+                                    onClick={() => imprimirFactura(facturaSeleccionada)}
+                                    className="crud-btn-action modal-print-btn"
+                                    style={{
+                                        padding: '12px 24px',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        backgroundColor: '#3b82f6',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s ease',
+                                        minWidth: '150px',
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    🖨️ Imprimir
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="crud-btn-submit modal-close-btn" 
+                                    onClick={() => setFacturaSeleccionada(null)} 
+                                    style={{ 
+                                        padding: '12px 24px',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        backgroundColor: '#6b7280',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s ease',
+                                        minWidth: '100px'
+                                    }}
+                                >
+                                    Cerrar
+                                </button>
+                            </div>
                     </div>
                 </div>
                 )}
