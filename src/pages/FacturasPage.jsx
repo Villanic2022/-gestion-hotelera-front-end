@@ -628,7 +628,7 @@ async function generarPDF(factura) {
                     <div className="crud-card" style={{ padding: '20px', textAlign: 'center' }}>
                         <div style={{ fontSize: '32px', marginBottom: '8px' }}>✅</div>
                         <div style={{ fontSize: '28px', fontWeight: '700', color: '#3b82f6' }}>
-                            {facturasFiltradas.filter(f => f.estado === 'APROBADA').length}
+                            {(facturasFiltradas || []).filter(f => f.estado === 'APROBADA').length}
                         </div>
                         <div style={{ fontSize: '14px', color: '#6b7280' }}>Aprobadas</div>
                     </div>
