@@ -17,13 +17,27 @@ export async function login(usuario, password) {
 // REGISTER: POST /api/auth/register
 // body que ya usamos en Postman:
 // { "usuario", "password", "nombre", "apellido", "email" }
-export async function register({ usuario, password, nombre, apellido, email }) {
+export async function register({
+    usuario,
+    password,
+    nombre,
+    apellido,
+    email,
+    nombreEmpresa,
+    cuit,
+    condicionIva,
+    domicilioFiscal,
+}) {
     const res = await api.post("/auth/register", {
         usuario,
         password,
         nombre,
         apellido,
         email,
+        nombreEmpresa,
+        cuit,
+        condicionIva,
+        domicilioFiscal,
     });
 
     const data = res.data;
