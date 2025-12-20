@@ -33,10 +33,12 @@ export default function HotelesPage() {
         try {
             setLoading(true);
             setError("");
+            console.log('Cargando hoteles...');
             const data = await getHoteles();
+            console.log('Hoteles recibidos:', data);
             setHoteles(data);
         } catch (err) {
-            console.error(err);
+            console.error('Error al cargar hoteles:', err);
             setError("Error al cargar hoteles");
         } finally {
             setLoading(false);
@@ -97,7 +99,9 @@ export default function HotelesPage() {
 
         try {
             if (editingId === null) {
-                await crearHotel(hotelData);
+                console.log('Creando hotel con datos:', hotelData);
+                const nuevoHotel = await crearHotel(hotelData);
+                console.log('Hotel creado:', nuevoHotel);
                 showToast("Hotel creado exitosamente", "success");
             } else {
                 await actualizarHotel(editingId, hotelData);
@@ -105,6 +109,7 @@ export default function HotelesPage() {
             }
 
             handleCloseModal();
+            console.log('Recargando lista de hoteles...');
             await cargarHoteles();
         } catch (err) {
             console.error(err);
@@ -135,6 +140,13 @@ export default function HotelesPage() {
         (h.ciudad || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (h.pais || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    console.log('Estado actual:', { 
+        hoteles, 
+        hotelesFiltrados, 
+        searchTerm, 
+        loading 
+    });
 
     return (
         <Layout>
