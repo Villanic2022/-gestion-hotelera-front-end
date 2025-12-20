@@ -131,9 +131,9 @@ export default function HotelesPage() {
 
     // Filtrar hoteles por búsqueda
     const hotelesFiltrados = (hoteles || []).filter(h =>
-        h.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        h.ciudad.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        h.pais.toLowerCase().includes(searchTerm.toLowerCase())
+        (h.nombre || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (h.ciudad || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (h.pais || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (

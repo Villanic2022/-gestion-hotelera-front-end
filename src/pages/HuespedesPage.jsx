@@ -134,9 +134,9 @@ export default function HuespedesPage() {
 
     // Filtrar huéspedes
     const huespedesFiltrados = (huespedes || []).filter(h =>
-        h.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        h.apellido.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        h.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (h.nombre || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (h.apellido || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (h.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (h.numeroDocumento && h.numeroDocumento.includes(searchTerm))
     );
 

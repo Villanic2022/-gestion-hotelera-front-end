@@ -145,7 +145,7 @@ export default function HabitacionesPage() {
 
     // Filtrar
     const habitacionesFiltradas = (habitaciones || []).filter(h =>
-        h.codigo.toLowerCase().includes(searchTerm.toLowerCase())
+        (h.codigo || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // Función para obtener badge según estado

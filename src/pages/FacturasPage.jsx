@@ -99,8 +99,8 @@ export default function FacturasPage() {
             if (filtroBusqueda) {
                 const busqueda = filtroBusqueda.toLowerCase();
                 const coincide =
-                    f.cae?.toLowerCase().includes(busqueda) ||
-                    f.documentoReceptor?.toLowerCase().includes(busqueda) ||
+                    (f.cae || "").toLowerCase().includes(busqueda) ||
+                    (f.documentoReceptor || "").toLowerCase().includes(busqueda) ||
                     String(f.reservaId).includes(busqueda) ||
                     String(f.numeroComprobante).includes(busqueda);
                 if (!coincide) return false;

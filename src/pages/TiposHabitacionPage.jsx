@@ -140,7 +140,7 @@ export default function TiposHabitacionPage() {
 
     // Filtrar
     const tiposFiltrados = (tipos || []).filter(t =>
-        t.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+        (t.nombre || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
