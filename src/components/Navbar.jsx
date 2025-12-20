@@ -24,13 +24,13 @@ export default function Navbar() {
     return (
         <header
             style={{
-                background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                background: "linear-gradient(135deg, #2d3748 0%, #1a202c 100%)",
                 color: "white",
                 padding: "16px 32px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                boxShadow: "0 4px 20px rgba(245, 158, 11, 0.3)",
+                boxShadow: "0 4px 20px rgba(45, 55, 72, 0.3)",
                 borderBottom: "3px solid rgba(255, 255, 255, 0.1)",
             }}
         >

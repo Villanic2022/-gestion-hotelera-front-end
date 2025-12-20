@@ -9,7 +9,7 @@
 /* === PANEL IZQUIERDO (Branding) === */
 .auth-brand-panel {
     flex: 1;
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 50%, #4a5568 100%);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -172,13 +172,13 @@
 
 .auth-input:focus {
     outline: none;
-    border-color: #f59e0b;
+    border-color: #4fd1c7;
     background: white;
-    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+    box-shadow: 0 0 0 4px rgba(79, 209, 199, 0.1);
 }
 
 .auth-input:focus+.auth-input-icon {
-    color: #f59e0b;
+    color: #4fd1c7;
 }
 
 .auth-error {
@@ -200,17 +200,17 @@
     font-size: 16px;
     font-weight: 600;
     color: white;
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    background: linear-gradient(135deg, #4fd1c7 0%, #38b2ac 100%);
     border: none;
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 4px 12px rgba(79, 209, 199, 0.3);
 }
 
 .auth-button:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+    box-shadow: 0 6px 16px rgba(79, 209, 199, 0.4);
 }
 
 .auth-button:active:not(:disabled) {
@@ -236,14 +236,14 @@
 }
 
 .auth-link {
-    color: #f59e0b;
+    color: #4fd1c7;
     text-decoration: none;
     font-weight: 600;
     transition: color 0.2s;
 }
 
 .auth-link:hover {
-    color: #d97706;
+    color: #38b2ac;
     text-decoration: underline;
 }
 
