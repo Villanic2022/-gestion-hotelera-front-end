@@ -3,8 +3,13 @@ import api from "./axios";
 
 // GET /api/tipos-habitacion
 export async function getTiposHabitacion() {
-    const res = await api.get("/tipos-habitacion");
-    return res.data; // array
+    try {
+        const res = await api.get("/tipos-habitacion");
+        return Array.isArray(res.data) ? res.data : [];
+    } catch (error) {
+        console.error('Error fetching tipos habitacion:', error);
+        return [];
+    }
 }
 
 // POST /api/tipos-habitacion

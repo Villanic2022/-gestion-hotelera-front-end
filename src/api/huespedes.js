@@ -3,8 +3,13 @@ import api from "./axios";
 
 // GET /api/huespedes
 export async function getHuespedes() {
-    const res = await api.get("/huespedes");
-    return res.data;
+    try {
+        const res = await api.get("/huespedes");
+        return Array.isArray(res.data) ? res.data : [];
+    } catch (error) {
+        console.error('Error fetching huespedes:', error);
+        return [];
+    }
 }
 
 // POST /api/huespedes

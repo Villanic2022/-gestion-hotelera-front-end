@@ -3,8 +3,13 @@ import api from "./axios";
 
 // GET /api/hoteles  -> lista de hoteles
 export async function getHoteles() {
-    const res = await api.get("/hoteles");
-    return res.data; // array de hoteles
+    try {
+        const res = await api.get("/hoteles");
+        return Array.isArray(res.data) ? res.data : [];
+    } catch (error) {
+        console.error('Error fetching hoteles:', error);
+        return [];
+    }
 }
 
 // POST /api/hoteles -> crear hotel

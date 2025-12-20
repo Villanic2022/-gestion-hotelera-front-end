@@ -3,8 +3,13 @@ import api from "./axios";
 
 // OBTENER HISTORIAL DE FACTURAS: GET /api/facturas
 export async function getFacturas() {
-    const res = await api.get("/facturas");
-    return res.data;
+    try {
+        const res = await api.get("/facturas");
+        return Array.isArray(res.data) ? res.data : [];
+    } catch (error) {
+        console.error('Error fetching facturas:', error);
+        return [];
+    }
 }
 
 // EMITIR FACTURA: POST /api/facturas/emitir
