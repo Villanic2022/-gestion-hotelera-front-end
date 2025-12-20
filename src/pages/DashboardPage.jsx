@@ -68,10 +68,14 @@ export default function DashboardPage() {
             setError("");
 
             // Cargar datos en paralelo
-            const [reservas, habitaciones] = await Promise.all([
+            const [reservasResponse, habitacionesResponse] = await Promise.all([
                 getReservas(),
                 getHabitaciones(),
             ]);
+
+            // Validar que los datos sean arrays
+            const reservas = Array.isArray(reservasResponse) ? reservasResponse : [];
+            const habitaciones = Array.isArray(habitacionesResponse) ? habitacionesResponse : [];
 
             // Calcular métricas
             const hoy = new Date().toISOString().split('T')[0];
