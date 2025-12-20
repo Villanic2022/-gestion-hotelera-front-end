@@ -77,17 +77,17 @@ export default function DashboardPage() {
             const hoy = new Date().toISOString().split('T')[0];
 
             // Reservas activas (CONFIRMADA, CHECKIN)
-            const reservasActivas = reservas.filter(
+            const reservasActivas = (reservas || []).filter(
                 r => r.estado === 'CONFIRMADA' || r.estado === 'CHECKIN'
             ).length;
 
             // Check-ins de hoy
-            const checkinsHoy = reservas.filter(
+            const checkinsHoy = (reservas || []).filter(
                 r => r.checkIn?.startsWith(hoy) && r.estado !== 'CANCELADA'
             ).length;
 
             // Check-outs de hoy
-            const checkoutsHoy = reservas.filter(
+            const checkoutsHoy = (reservas || []).filter(
                 r => r.checkOut?.startsWith(hoy) && r.estado !== 'CANCELADA'
             ).length;
 
@@ -209,14 +209,14 @@ export default function DashboardPage() {
 
             // Calcular disponibilidad usando las reservas existentes
             const reservas = await getReservas();
-            const habitacionesHotel = habitaciones.filter(h => h.hotelId === parseInt(hotelId));
+            const habitacionesHotel = (habitaciones || []).filter(h => h.hotelId === parseInt(hotelId));
 
             const checkInDate = new Date(checkIn);
             const checkOutDate = new Date(checkOut);
 
             const habitacionesDisponibles = habitacionesHotel.filter(habitacion => {
                 // Verificar si esta habitación está disponible en el rango de fechas
-                const reservasHabitacion = reservas.filter(r =>
+                const reservasHabitacion = (reservas || []).filter(r =>
                     r.habitacionId === habitacion.id && r.estado !== 'CANCELADA'
                 );
 
@@ -269,11 +269,11 @@ export default function DashboardPage() {
             const reservas = await getReservas();
             console.log('Reservas obtenidas:', reservas.length);
 
-            const habitacionesHotel = habitaciones.filter(h => h.hotelId === parseInt(hotelId));
+            const habitacionesHotel = (habitaciones || []).filter(h => h.hotelId === parseInt(hotelId));
 
             if (habitacionId) {
                 // Modo habitación individual
-                const reservasFiltradas = reservas.filter(r =>
+                const reservasFiltradas = (reservas || []).filter(r =>
                     r.habitacionId === parseInt(habitacionId) && r.estado !== 'CANCELADA'
                 );
 
@@ -502,7 +502,7 @@ export default function DashboardPage() {
 
         return dias;
     };
-    const habitacionesFiltradas = habitaciones.filter((h) => {
+    const habitacionesFiltradas = (habitaciones || []).filter((h) => {
         if (tipoHabitacionId && h.tipoHabitacionId !== parseInt(tipoHabitacionId)) return false;
         return true;
     });
@@ -651,7 +651,7 @@ export default function DashboardPage() {
                                             setCalendarioData(null); // Limpiar calendario al cambiar
                                         }} className="crud-form-select" disabled={!hotelId}>
                                             <option value="">Ver todas las habitaciones</option>
-                                            {hotelId && habitaciones.filter(h => h.hotelId === parseInt(hotelId)).map((h) => {
+                                            {hotelId && (habitaciones || []).filter(h => h.hotelId === parseInt(hotelId)).map((h) => {
                                                 // Buscar el tipo de habitación completo
                                                 const tipoHab = tiposHabitacion.find(t => t.id === h.tipoHabitacionId);
                                                 const nombreTipo = tipoHab?.nombre || h.tipoHabitacion?.nombre || 'Cabaña';
