@@ -1,7 +1,8 @@
+```javascript
 // src/pages/FacturasPage.jsx
 import { useEffect, useState, useRef } from "react";
 import Layout from "../components/Layout";
-import { getFacturas, getFacturaDetalle } from "../api/facturas";
+import { getFactuimport { getFacturas, getFacturaDetalle } from "../api/facturas";
 import { useToast } from "../context/ToastContext";
 import jsPDF from "jspdf";
 import "../styles/crud.css";
@@ -91,7 +92,7 @@ export default function FacturasPage() {
 
     // Formatear número de comprobante
     function formatearNumeroComprobante(puntoVenta, numero) {
-        return `${String(puntoVenta).padStart(5, '0')}-${String(numero).padStart(8, '0')}`;
+        return `${ String(puntoVenta).padStart(5, '0') } -${ String(numero).padStart(8, '0') } `;
     }
 
     // Formatear fecha
@@ -119,7 +120,7 @@ export default function FacturasPage() {
                 const year = fecha.substring(0, 4);
                 const month = fecha.substring(4, 6);
                 const day = fecha.substring(6, 8);
-                return `${day}/${month}/${year}`;
+                return `${ day } /${month}/${ year } `;
             }
             return new Date(fecha).toLocaleDateString('es-AR');
         } catch {
@@ -156,13 +157,13 @@ async function generarPDF(factura) {
         doc.setFontSize(9);
         doc.setTextColor(...lightGray);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Domicilio Fiscal: ${facturaCompleta.emisorDomicilioFiscal || 'Sistema de Gestión de Cabañas'}`, 20, 30);
+        doc.text(`Domicilio Fiscal: ${ facturaCompleta.emisorDomicilioFiscal || 'Sistema de Gestión de Cabañas' } `, 20, 30);
         
         // CUIT Emisor
         doc.setFontSize(10);
         doc.setTextColor(...primaryColor);
         doc.setFont('helvetica', 'bold');
-        doc.text(`CUIT: ${facturaCompleta.cuitEmisor || 'N/A'}`, 20, 40);
+        doc.text(`CUIT: ${ facturaCompleta.cuitEmisor || 'N/A' } `, 20, 40);
 
         // Información fiscal en header
         if (facturaCompleta.esFiscal) {
@@ -211,7 +212,7 @@ async function generarPDF(factura) {
         doc.setFontSize(14);
         doc.setTextColor(...primaryColor);
         doc.setFont('helvetica', 'bold');
-        doc.text(`Comprobante Nº: ${formatearNumeroComprobante(facturaCompleta.puntoVenta, facturaCompleta.numeroComprobante)}`, 20, yPos);
+        doc.text(`Comprobante Nº: ${ formatearNumeroComprobante(facturaCompleta.puntoVenta, facturaCompleta.numeroComprobante) } `, 20, yPos);
         
         // Fecha de emisión
         doc.setFontSize(10);
@@ -242,7 +243,7 @@ async function generarPDF(factura) {
         
         doc.setTextColor(...lightGray);
         doc.setFont('helvetica', 'normal');
-        doc.text(`${facturaCompleta.tipoDocumentoReceptor || 'DOC'}:`, 25, yPos + 27);
+        doc.text(`${ facturaCompleta.tipoDocumentoReceptor || 'DOC' }: `, 25, yPos + 27);
         doc.setTextColor(...primaryColor);
         doc.setFont('helvetica', 'bold');
         doc.text(facturaCompleta.documentoReceptor || 'N/A', 50, yPos + 27);
@@ -262,7 +263,7 @@ async function generarPDF(factura) {
         doc.text('Reserva:', 25, yPos);
         doc.setTextColor(...primaryColor);
         doc.setFont('helvetica', 'bold');
-        doc.text(`#${facturaCompleta.reservaId}`, 55, yPos);
+        doc.text(`#${ facturaCompleta.reservaId } `, 55, yPos);
 
         // Descripción del servicio
         if (facturaCompleta.detalle) {
@@ -300,7 +301,7 @@ async function generarPDF(factura) {
         doc.text('Subtotal:', 25, yPos);
         doc.setTextColor(...primaryColor);
         doc.setFont('helvetica', 'bold');
-        doc.text(`$ ${facturaCompleta.importeTotal?.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`, pageWidth - 25, yPos, { align: 'right' });
+        doc.text(`$ ${ facturaCompleta.importeTotal?.toLocaleString('es-AR', { minimumFractionDigits: 2 }) } `, pageWidth - 25, yPos, { align: 'right' });
         
         // IVA (si es factura B)
         if (facturaCompleta.tipoComprobante === 'B') {
@@ -323,7 +324,7 @@ async function generarPDF(factura) {
         doc.setFont('helvetica', 'bold');
         doc.text('TOTAL:', 25, yPos + 8);
         doc.setFontSize(16);
-        doc.text(`$ ${facturaCompleta.importeTotal?.toLocaleString('es-AR', { minimumFractionDigits: 2 })} ${facturaCompleta.moneda || 'ARS'}`, pageWidth - 25, yPos + 8, { align: 'right' });
+        doc.text(`$ ${ facturaCompleta.importeTotal?.toLocaleString('es-AR', { minimumFractionDigits: 2 }) } ${ facturaCompleta.moneda || 'ARS' } `, pageWidth - 25, yPos + 8, { align: 'right' });
 
         // Información fiscal (CAE)
         yPos += 35;
@@ -390,10 +391,10 @@ async function generarPDF(factura) {
         doc.setTextColor(...lightGray);
         doc.setFont('helvetica', 'normal');
         doc.text('Documento generado por EasyCheck - Sistema de Gestión de Cabañas', pageWidth / 2, footerY, { align: 'center' });
-        doc.text(`Generado el: ${new Date().toLocaleString('es-AR')}`, pageWidth / 2, footerY + 5, { align: 'center' });
+        doc.text(`Generado el: ${ new Date().toLocaleString('es-AR') } `, pageWidth / 2, footerY + 5, { align: 'center' });
 
         // Descargar
-        const nombreArchivo = `Factura_${factura.tipoComprobante}_${formatearNumeroComprobante(factura.puntoVenta, factura.numeroComprobante).replace('-', '_')}.pdf`;
+        const nombreArchivo = `Factura_${ factura.tipoComprobante }_${ formatearNumeroComprobante(factura.puntoVenta, factura.numeroComprobante).replace('-', '_') }.pdf`;
         doc.save(nombreArchivo);
         showToast('success', 'PDF descargado correctamente');
     } catch (error) {
@@ -427,12 +428,12 @@ async function generarPDF(factura) {
             doc.setFontSize(9);
             doc.setTextColor(...lightGray);
             doc.setFont('helvetica', 'normal');
-            doc.text(`Domicilio Fiscal: ${facturaCompleta.emisorDomicilioFiscal || 'Sistema de Gestión de Cabañas'}`, 20, 30);
+            doc.text(`Domicilio Fiscal: ${ facturaCompleta.emisorDomicilioFiscal || 'Sistema de Gestión de Cabañas' } `, 20, 30);
             
             doc.setFontSize(10);
             doc.setTextColor(...primaryColor);
             doc.setFont('helvetica', 'bold');
-            doc.text(`CUIT: ${facturaCompleta.cuitEmisor || 'N/A'}`, 20, 40);
+            doc.text(`CUIT: ${ facturaCompleta.cuitEmisor || 'N/A' } `, 20, 40);
 
             if (facturaCompleta.esFiscal) {
                 doc.setFontSize(8);
@@ -470,7 +471,7 @@ async function generarPDF(factura) {
             doc.setFontSize(14);
             doc.setTextColor(...primaryColor);
             doc.setFont('helvetica', 'bold');
-            doc.text(`Comprobante Nº: ${formatearNumeroComprobante(facturaCompleta.puntoVenta, facturaCompleta.numeroComprobante)}`, 20, yPos);
+            doc.text(`Comprobante Nº: ${ formatearNumeroComprobante(facturaCompleta.puntoVenta, facturaCompleta.numeroComprobante) } `, 20, yPos);
             
             doc.setFontSize(10);
             doc.setTextColor(...lightGray);
@@ -500,7 +501,7 @@ async function generarPDF(factura) {
             
             doc.setTextColor(...lightGray);
             doc.setFont('helvetica', 'normal');
-            doc.text(`${facturaCompleta.tipoDocumentoReceptor || 'DOC'}:`, 25, yPos + 27);
+            doc.text(`${ facturaCompleta.tipoDocumentoReceptor || 'DOC' }: `, 25, yPos + 27);
             doc.setTextColor(...primaryColor);
             doc.setFont('helvetica', 'bold');
             doc.text(facturaCompleta.documentoReceptor || 'N/A', 50, yPos + 27);
@@ -515,7 +516,7 @@ async function generarPDF(factura) {
             doc.setFont('helvetica', 'bold');
             doc.text('TOTAL:', 25, yPos + 15);
             doc.setFontSize(18);
-            doc.text(`$ ${facturaCompleta.importeTotal?.toLocaleString('es-AR', { minimumFractionDigits: 2 })} ${facturaCompleta.moneda || 'ARS'}`, pageWidth - 25, yPos + 15, { align: 'right' });
+            doc.text(`$ ${ facturaCompleta.importeTotal?.toLocaleString('es-AR', { minimumFractionDigits: 2 }) } ${ facturaCompleta.moneda || 'ARS' } `, pageWidth - 25, yPos + 15, { align: 'right' });
 
             // Información fiscal CAE
             if (facturaCompleta.cae && facturaCompleta.esFiscal) {
@@ -527,8 +528,8 @@ async function generarPDF(factura) {
                 doc.setTextColor(21, 128, 61);
                 doc.setFont('helvetica', 'bold');
                 doc.text('COMPROBANTE AUTORIZADO POR AFIP', 25, yPos + 8);
-                doc.text(`CAE: ${facturaCompleta.cae}`, 25, yPos + 18);
-                doc.text(`Vencimiento: ${formatearFechaCorta(facturaCompleta.caeVencimiento)}`, 25, yPos + 28);
+                doc.text(`CAE: ${ facturaCompleta.cae } `, 25, yPos + 18);
+                doc.text(`Vencimiento: ${ formatearFechaCorta(facturaCompleta.caeVencimiento) } `, 25, yPos + 28);
             }
 
             // Footer optimizado para impresión
@@ -539,7 +540,7 @@ async function generarPDF(factura) {
             doc.setFontSize(8);
             doc.setTextColor(...lightGray);
             doc.setFont('helvetica', 'normal');
-            doc.text(`${facturaCompleta.emisorNombre || 'EasyCheck'} - CUIT: ${facturaCompleta.cuitEmisor || 'N/A'}`, pageWidth / 2, footerY, { align: 'center' });
+            doc.text(`${ facturaCompleta.emisorNombre || 'EasyCheck' } - CUIT: ${ facturaCompleta.cuitEmisor || 'N/A' } `, pageWidth / 2, footerY, { align: 'center' });
 
             // Abrir en nueva ventana para imprimir
             doc.autoPrint();
@@ -740,7 +741,7 @@ async function generarPDF(factura) {
                                             {formatearFechaCorta(f.caeVencimiento)}
                                         </td>
                                         <td style={{ padding: '12px', textAlign: 'center' }}>
-                                            <span className={`crud-badge ${f.estado === 'APROBADA' ? 'success' : f.estado === 'RECHAZADA' ? 'danger' : 'warning'}`} style={{ fontSize: '11px' }}>
+                                            <span className={`crud - badge ${ f.estado === 'APROBADA' ? 'success' : f.estado === 'RECHAZADA' ? 'danger' : 'warning' } `} style={{ fontSize: '11px' }}>
                                                 {f.estado}
                                             </span>
                                         </td>
@@ -949,7 +950,7 @@ async function generarPDF(factura) {
 
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
                                         <span style={{ color: '#6b7280', fontSize: '14px' }}>Estado:</span>
-                                        <span className={`crud-badge ${facturaSeleccionada.estado === 'APROBADA' ? 'success' : facturaSeleccionada.estado === 'RECHAZADA' ? 'danger' : 'warning'}`}>
+                                        <span className={`crud - badge ${ facturaSeleccionada.estado === 'APROBADA' ? 'success' : facturaSeleccionada.estado === 'RECHAZADA' ? 'danger' : 'warning' } `}>
                                             {facturaSeleccionada.estado}
                                         </span>
                                     </div>
@@ -989,15 +990,26 @@ async function generarPDF(factura) {
                                         alignItems: 'center',
                                         gap: '8px'
                                     }}
-                                >
-                                    🖨️ Imprimir
-                                </button>
-                                <button
-                                    type="button"
-                                    className="crud-btn-submit"
-                                    onClick={() => setFacturaSeleccionada(null)}
-                                    style={{ padding: '10px 20px' }}
-                                >
+                            <div className="crud-modal-footer" style={{ justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button 
+                                        type="button" 
+                                        className="crud-btn-success" 
+                                        onClick={() => generarPDF(facturaSeleccionada)}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                                    >
+                                        📄 Descargar PDF
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        className="crud-btn-primary" 
+                                        onClick={() => imprimirFactura(facturaSeleccionada)}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                                    >
+                                        🖨️ Imprimir
+                                    </button>
+                                </div>
+                                <button type="button" className="crud-btn-submit" onClick={() => setFacturaSeleccionada(null)} style={{ backgroundColor: '#f59e0b' }}>
                                     Cerrar
                                 </button>
                             </div>
