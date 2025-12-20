@@ -1,5 +1,5 @@
 // src/pages/FacturasPage.jsx
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import { getFacturas, getFacturaDetalle } from "../api/facturas";
 import { useToast } from "../context/ToastContext";
@@ -159,200 +159,50 @@ export default function FacturasPage() {
    // Función para generar PDF de factura
 async function generarPDF(factura) {
     try {
-        // Obtener detalles completos de la factura con campos fiscales
+        // Obtener detalles completos de la factura
         const facturaCompleta = await getFacturaDetalle(factura.id);
         
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();
 
-        // Colores para facturas fiscales
-        const primaryColor = [31, 41, 55]; // Gris oscuro
-        const accentColor = [16, 185, 129]; // Verde
-        const lightGray = [107, 114, 128];
-        const redColor = [220, 38, 38]; // Rojo para resaltar información fiscal
-
-        // Header con información fiscal
-        doc.setFillColor(249, 250, 251);
-        doc.rect(0, 0, pageWidth, 65, 'F');
-
-        // Nombre del emisor (razón social)
+        // Header simple
         doc.setFontSize(20);
-        doc.setTextColor(...primaryColor);
         doc.setFont('helvetica', 'bold');
-        doc.text(facturaCompleta.emisorNombre || 'EasyCheck', 20, 20);
-
-        // Domicilio fiscal
-        doc.setFontSize(9);
-        doc.setTextColor(...lightGray);
+        doc.text('EasyCheck', 20, 20);
+        
+        doc.setFontSize(12);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Domicilio Fiscal: ${facturaCompleta.emisorDomicilioFiscal || 'EasyCheck - Sistema de Gestión de Cabañas'}`, 20, 30);
-        
-        // CUIT Emisor
-        doc.setFontSize(10);
-        doc.setTextColor(...primaryColor);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`CUIT: ${facturaCompleta.cuitEmisor || 'N/A'}`, 20, 40);
+        doc.text('Sistema de Gestión de Cabañas', 20, 30);
 
-        // Información fiscal en header
-        if (facturaCompleta.esFiscal) {
-            doc.setFontSize(8);
-            doc.setTextColor(...redColor);
-            doc.setFont('helvetica', 'bold');
-            doc.text('COMPROBANTE FISCAL ELECTRÓNICO', 20, 50);
-            doc.text('IVA RESPONSABLE INSCRIPTO', 20, 58);
-        } else {
-            doc.setFontSize(8);
-            doc.setTextColor(...lightGray);
-            doc.setFont('helvetica', 'normal');
-            doc.text('COMPROBANTE NO FISCAL', 20, 50);
-        }
-
-        // Tipo de Comprobante (cuadro a la derecha)
-        const tipoColor = facturaCompleta.tipoComprobante === 'B' ? [29, 78, 216] : [220, 38, 38];
-        const tipoFondo = facturaCompleta.tipoComprobante === 'B' ? [219, 234, 254] : [254, 226, 226];
-        
-        doc.setFillColor(...tipoFondo);
-        doc.roundedRect(pageWidth - 70, 10, 55, 45, 3, 3, 'F');
-        
-        // Código de factura
-        doc.setFontSize(32);
-        doc.setTextColor(...tipoColor);
-        doc.setFont('helvetica', 'bold');
-        doc.text(facturaCompleta.tipoComprobante, pageWidth - 42, 32, { align: 'center' });
-        
-        // Descripción del tipo
-        doc.setFontSize(8);
-        const descripcionTipo = facturaCompleta.tipoComprobante === 'B' ? 'FACTURA B' : 'FACTURA C';
-        doc.text(descripcionTipo, pageWidth - 42, 42, { align: 'center' });
-        
-        if (facturaCompleta.esFiscal) {
-            doc.text('COD: 06', pageWidth - 42, 50, { align: 'center' });
-        }
-
-        // Línea separadora
-        doc.setDrawColor(229, 231, 235);
-        doc.line(20, 70, pageWidth - 20, 70);
-
-        // Información del comprobante
-        let yPos = 85;
-        
-        // Número de comprobante
-        doc.setFontSize(14);
-        doc.setTextColor(...primaryColor);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`Comprobante Nº: ${formatearNumeroComprobante(facturaCompleta.puntoVenta, facturaCompleta.numeroComprobante)}`, 20, yPos);
-        
-        // Fecha de emisión
-        doc.setFontSize(10);
-        doc.setTextColor(...lightGray);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Fecha de Emisión:', pageWidth - 80, yPos - 5);
-        doc.setTextColor(...primaryColor);
-        doc.setFont('helvetica', 'bold');
-        doc.text(formatearFecha(facturaCompleta.fechaEmision), pageWidth - 80, yPos + 5);
-
-        // Datos del cliente (receptor)
-        yPos += 25;
-        doc.setFillColor(248, 250, 252);
-        doc.roundedRect(20, yPos - 5, pageWidth - 40, 35, 3, 3, 'F');
-        
-        doc.setFontSize(11);
-        doc.setTextColor(...primaryColor);
-        doc.setFont('helvetica', 'bold');
-        doc.text('DATOS DEL CLIENTE', 25, yPos + 8);
-        
-        doc.setFontSize(10);
-        doc.setTextColor(...lightGray);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Cliente:', 25, yPos + 18);
-        doc.setTextColor(...primaryColor);
-        doc.setFont('helvetica', 'bold');
-        doc.text(facturaCompleta.receptorNombre || 'N/A', 50, yPos + 18);
-        
-        doc.setTextColor(...lightGray);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`${facturaCompleta.tipoDocumentoReceptor || 'DOC'}: `, 25, yPos + 27);
-        doc.setTextColor(...primaryColor);
-        doc.setFont('helvetica', 'bold');
-        doc.text(facturaCompleta.documentoReceptor || 'N/A', 50, yPos + 27);
-
-        // Detalle de reserva
-        yPos += 45;
-        doc.setFontSize(11);
-        doc.setTextColor(...primaryColor);
-        doc.setFont('helvetica', 'bold');
-        doc.text('DETALLE DEL SERVICIO', 25, yPos);
-        
-        yPos += 15;
-        doc.setFontSize(10);
-        doc.setTextColor(...lightGray);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Reserva:', 25, yPos);
-        doc.setTextColor(...primaryColor);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`#${facturaCompleta.reservaId}`, 55, yPos);
-
-        // Descripción del servicio
-        if (facturaCompleta.detalle) {
-            yPos += 15;
-            doc.setTextColor(...lightGray);
-            doc.setFont('helvetica', 'normal');
-            doc.text('Concepto:', 25, yPos);
-            doc.setTextColor(...primaryColor);
-            doc.setFont('helvetica', 'normal');
-            const splitDetalle = doc.splitTextToSize(facturaCompleta.detalle, pageWidth - 60);
-            doc.text(splitDetalle, 25, yPos + 10);
-            yPos += 10 + (splitDetalle.length * 5);
-        }
-
-        // Total final
-        yPos += 30;
-        doc.setFillColor(16, 185, 129);
-        doc.roundedRect(20, yPos - 5, pageWidth - 40, 20, 3, 3, 'F');
-        
-        doc.setFontSize(14);
-        doc.setTextColor(255, 255, 255);
-        doc.setFont('helvetica', 'bold');
-        doc.text('TOTAL:', 25, yPos + 8);
+        // Información de la factura
         doc.setFontSize(16);
-        doc.text(`$ ${facturaCompleta.importeTotal?.toLocaleString('es-AR', { minimumFractionDigits: 2 })} ${facturaCompleta.moneda || 'ARS'}`, pageWidth - 25, yPos + 8, { align: 'right' });
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Factura ${facturaCompleta.tipoComprobante}`, 20, 50);
+        
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Número: ${formatearNumeroComprobante(facturaCompleta.puntoVenta, facturaCompleta.numeroComprobante)}`, 20, 65);
+        doc.text(`Fecha: ${formatearFecha(facturaCompleta.fechaEmision)}`, 20, 80);
+        doc.text(`Cliente: ${facturaCompleta.receptorNombre || 'N/A'}`, 20, 95);
+        doc.text(`Documento: ${facturaCompleta.documentoReceptor || 'N/A'}`, 20, 110);
+        doc.text(`Reserva: #${facturaCompleta.reservaId}`, 20, 125);
+        
+        // Total
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Total: $${facturaCompleta.importeTotal?.toLocaleString('es-AR', { minimumFractionDigits: 2 })} ${facturaCompleta.moneda || 'ARS'}`, 20, 145);
 
-        // Información fiscal (CAE)
-        yPos += 35;
-        if (facturaCompleta.cae && facturaCompleta.esFiscal) {
-            doc.setFillColor(240, 253, 244);
-            doc.roundedRect(20, yPos - 5, pageWidth - 40, 45, 3, 3, 'F');
-            doc.setDrawColor(34, 197, 94);
-            doc.roundedRect(20, yPos - 5, pageWidth - 40, 45, 3, 3, 'S');
-            
-            doc.setFontSize(11);
-            doc.setTextColor(21, 128, 61);
-            doc.setFont('helvetica', 'bold');
-            doc.text('COMPROBANTE AUTORIZADO POR AFIP', 25, yPos + 8);
-            
+        // CAE si existe
+        if (facturaCompleta.cae) {
             doc.setFontSize(10);
-            doc.setTextColor(22, 101, 52);
             doc.setFont('helvetica', 'normal');
-            doc.text('CAE:', 25, yPos + 20);
-            doc.setFont('helvetica', 'bold');
-            doc.text(facturaCompleta.cae, 45, yPos + 20);
-            
-            doc.setFont('helvetica', 'normal');
-            doc.text('Vencimiento CAE:', 25, yPos + 30);
-            doc.setFont('helvetica', 'bold');
-            doc.text(formatearFechaCorta(facturaCompleta.caeVencimiento), 85, yPos + 30);
+            doc.text(`CAE: ${facturaCompleta.cae}`, 20, 165);
+            doc.text(`Vencimiento CAE: ${formatearFechaCorta(facturaCompleta.caeVencimiento)}`, 20, 180);
         }
 
         // Footer
-        const footerY = doc.internal.pageSize.getHeight() - 20;
-        doc.setDrawColor(229, 231, 235);
-        doc.line(20, footerY - 10, pageWidth - 20, footerY - 10);
-
         doc.setFontSize(8);
-        doc.setTextColor(...lightGray);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Documento generado por EasyCheck - Sistema de Gestión de Cabañas', pageWidth / 2, footerY, { align: 'center' });
-        doc.text(`Generado el: ${new Date().toLocaleString('es-AR')}`, pageWidth / 2, footerY + 5, { align: 'center' });
+        doc.text(`Generado el: ${new Date().toLocaleString('es-AR')}`, 20, 250);
 
         // Descargar
         const nombreArchivo = `Factura_${factura.tipoComprobante}_${formatearNumeroComprobante(factura.puntoVenta, factura.numeroComprobante).replace('-', '_')}.pdf`;
@@ -367,21 +217,11 @@ async function generarPDF(factura) {
     // Función para imprimir factura
     async function imprimirFactura(factura) {
         try {
-            // Obtener detalles completos de la factura con campos fiscales
-            const facturaCompleta = await getFacturaDetalle(factura.id);
-            const doc = new jsPDF();
-            
-            // Usar la misma lógica de generación de PDF pero para imprimir
+            // Generar PDF y luego abrir diálogo de impresión
             await generarPDF(factura);
-            
-            showToast('success', 'Abriendo diálogo de impresión...');
-            
-            // Crear una nueva instancia del PDF para imprimir
-            setTimeout(() => {
-                window.print();
-            }, 1000);
+            showToast('success', 'PDF generado. Use Ctrl+P para imprimir.');
         } catch (error) {
-            console.error('Error al imprimir factura:', error);
+            console.error('Error al preparar factura para imprimir:', error);
             showToast('error', 'Error al preparar factura para impresión');
         }
     }

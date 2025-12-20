@@ -7,6 +7,12 @@ export async function getFacturas() {
     return res.data;
 }
 
+// OBTENER DETALLE COMPLETO DE FACTURA: GET /api/facturas/:id
+export async function getFacturaDetalle(id) {
+    const res = await api.get(`/facturas/${id}`);
+    return res.data;
+}
+
 // EMITIR FACTURA: POST /api/facturas/emitir
 export async function emitirFactura(datos) {
     const res = await api.post("/facturas/emitir", datos);
