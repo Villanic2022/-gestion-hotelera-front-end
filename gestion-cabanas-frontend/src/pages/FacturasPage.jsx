@@ -1,9 +1,29 @@
 // src/pages/FacturasPage.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Layout from "../components/Layout";
-import { getFacturas } from "../api/facturas";
+import { getFacturas, getFacturaDetalle } from "../api/facturas";
 import { useToast } from "../context/ToastContext";
+import jsPDF from "jspdf";
 import "../styles/crud.css";
+
+// Estilos adicionales para los botones del modal
+const modalButtonStyles = `
+    .modal-pdf-btn:hover {
+        background-color: #059669 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    .modal-print-btn:hover {
+        background-color: #2563eb !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    .modal-close-btn:hover {
+        background-color: #4b5563 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+    }
+`;
 
 export default function FacturasPage() {
     const { showToast } = useToast();
@@ -23,6 +43,16 @@ export default function FacturasPage() {
 
     useEffect(() => {
         cargarFacturas();
+        
+        // Agregar estilos CSS para los botones del modal
+        const style = document.createElement('style');
+        style.textContent = modalButtonStyles;
+        document.head.appendChild(style);
+        
+        // Cleanup: remover estilos cuando el componente se desmonte
+        return () => {
+            document.head.removeChild(style);
+        };
     }, []);
 
     async function cargarFacturas() {
@@ -123,6 +153,236 @@ export default function FacturasPage() {
             return new Date(fecha).toLocaleDateString('es-AR');
         } catch {
             return fecha;
+        }
+    }
+
+   // Función para generar PDF de factura
+async function generarPDF(factura) {
+    try {
+        // Obtener detalles completos de la factura con campos fiscales
+        const facturaCompleta = await getFacturaDetalle(factura.id);
+        
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+
+        // Colores para facturas fiscales
+        const primaryColor = [31, 41, 55]; // Gris oscuro
+        const accentColor = [16, 185, 129]; // Verde
+        const lightGray = [107, 114, 128];
+        const redColor = [220, 38, 38]; // Rojo para resaltar información fiscal
+
+        // Header con información fiscal
+        doc.setFillColor(249, 250, 251);
+        doc.rect(0, 0, pageWidth, 65, 'F');
+
+        // Nombre del emisor (razón social)
+        doc.setFontSize(20);
+        doc.setTextColor(...primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text(facturaCompleta.emisorNombre || 'EasyCheck', 20, 20);
+
+        // Domicilio fiscal
+        doc.setFontSize(9);
+        doc.setTextColor(...lightGray);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Domicilio Fiscal: ${facturaCompleta.emisorDomicilioFiscal || 'EasyCheck - Sistema de Gestión de Cabañas'}`, 20, 30);
+        
+        // CUIT Emisor
+        doc.setFontSize(10);
+        doc.setTextColor(...primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`CUIT: ${facturaCompleta.cuitEmisor || 'N/A'}`, 20, 40);
+
+        // Información fiscal en header
+        if (facturaCompleta.esFiscal) {
+            doc.setFontSize(8);
+            doc.setTextColor(...redColor);
+            doc.setFont('helvetica', 'bold');
+            doc.text('COMPROBANTE FISCAL ELECTRÓNICO', 20, 50);
+            doc.text('IVA RESPONSABLE INSCRIPTO', 20, 58);
+        } else {
+            doc.setFontSize(8);
+            doc.setTextColor(...lightGray);
+            doc.setFont('helvetica', 'normal');
+            doc.text('COMPROBANTE NO FISCAL', 20, 50);
+        }
+
+        // Tipo de Comprobante (cuadro a la derecha)
+        const tipoColor = facturaCompleta.tipoComprobante === 'B' ? [29, 78, 216] : [220, 38, 38];
+        const tipoFondo = facturaCompleta.tipoComprobante === 'B' ? [219, 234, 254] : [254, 226, 226];
+        
+        doc.setFillColor(...tipoFondo);
+        doc.roundedRect(pageWidth - 70, 10, 55, 45, 3, 3, 'F');
+        
+        // Código de factura
+        doc.setFontSize(32);
+        doc.setTextColor(...tipoColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text(facturaCompleta.tipoComprobante, pageWidth - 42, 32, { align: 'center' });
+        
+        // Descripción del tipo
+        doc.setFontSize(8);
+        const descripcionTipo = facturaCompleta.tipoComprobante === 'B' ? 'FACTURA B' : 'FACTURA C';
+        doc.text(descripcionTipo, pageWidth - 42, 42, { align: 'center' });
+        
+        if (facturaCompleta.esFiscal) {
+            doc.text('COD: 06', pageWidth - 42, 50, { align: 'center' });
+        }
+
+        // Línea separadora
+        doc.setDrawColor(229, 231, 235);
+        doc.line(20, 70, pageWidth - 20, 70);
+
+        // Información del comprobante
+        let yPos = 85;
+        
+        // Número de comprobante
+        doc.setFontSize(14);
+        doc.setTextColor(...primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Comprobante Nº: ${formatearNumeroComprobante(facturaCompleta.puntoVenta, facturaCompleta.numeroComprobante)}`, 20, yPos);
+        
+        // Fecha de emisión
+        doc.setFontSize(10);
+        doc.setTextColor(...lightGray);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Fecha de Emisión:', pageWidth - 80, yPos - 5);
+        doc.setTextColor(...primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text(formatearFecha(facturaCompleta.fechaEmision), pageWidth - 80, yPos + 5);
+
+        // Datos del cliente (receptor)
+        yPos += 25;
+        doc.setFillColor(248, 250, 252);
+        doc.roundedRect(20, yPos - 5, pageWidth - 40, 35, 3, 3, 'F');
+        
+        doc.setFontSize(11);
+        doc.setTextColor(...primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text('DATOS DEL CLIENTE', 25, yPos + 8);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(...lightGray);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Cliente:', 25, yPos + 18);
+        doc.setTextColor(...primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text(facturaCompleta.receptorNombre || 'N/A', 50, yPos + 18);
+        
+        doc.setTextColor(...lightGray);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${facturaCompleta.tipoDocumentoReceptor || 'DOC'}: `, 25, yPos + 27);
+        doc.setTextColor(...primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text(facturaCompleta.documentoReceptor || 'N/A', 50, yPos + 27);
+
+        // Detalle de reserva
+        yPos += 45;
+        doc.setFontSize(11);
+        doc.setTextColor(...primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text('DETALLE DEL SERVICIO', 25, yPos);
+        
+        yPos += 15;
+        doc.setFontSize(10);
+        doc.setTextColor(...lightGray);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Reserva:', 25, yPos);
+        doc.setTextColor(...primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`#${facturaCompleta.reservaId}`, 55, yPos);
+
+        // Descripción del servicio
+        if (facturaCompleta.detalle) {
+            yPos += 15;
+            doc.setTextColor(...lightGray);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Concepto:', 25, yPos);
+            doc.setTextColor(...primaryColor);
+            doc.setFont('helvetica', 'normal');
+            const splitDetalle = doc.splitTextToSize(facturaCompleta.detalle, pageWidth - 60);
+            doc.text(splitDetalle, 25, yPos + 10);
+            yPos += 10 + (splitDetalle.length * 5);
+        }
+
+        // Total final
+        yPos += 30;
+        doc.setFillColor(16, 185, 129);
+        doc.roundedRect(20, yPos - 5, pageWidth - 40, 20, 3, 3, 'F');
+        
+        doc.setFontSize(14);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.text('TOTAL:', 25, yPos + 8);
+        doc.setFontSize(16);
+        doc.text(`$ ${facturaCompleta.importeTotal?.toLocaleString('es-AR', { minimumFractionDigits: 2 })} ${facturaCompleta.moneda || 'ARS'}`, pageWidth - 25, yPos + 8, { align: 'right' });
+
+        // Información fiscal (CAE)
+        yPos += 35;
+        if (facturaCompleta.cae && facturaCompleta.esFiscal) {
+            doc.setFillColor(240, 253, 244);
+            doc.roundedRect(20, yPos - 5, pageWidth - 40, 45, 3, 3, 'F');
+            doc.setDrawColor(34, 197, 94);
+            doc.roundedRect(20, yPos - 5, pageWidth - 40, 45, 3, 3, 'S');
+            
+            doc.setFontSize(11);
+            doc.setTextColor(21, 128, 61);
+            doc.setFont('helvetica', 'bold');
+            doc.text('COMPROBANTE AUTORIZADO POR AFIP', 25, yPos + 8);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(22, 101, 52);
+            doc.setFont('helvetica', 'normal');
+            doc.text('CAE:', 25, yPos + 20);
+            doc.setFont('helvetica', 'bold');
+            doc.text(facturaCompleta.cae, 45, yPos + 20);
+            
+            doc.setFont('helvetica', 'normal');
+            doc.text('Vencimiento CAE:', 25, yPos + 30);
+            doc.setFont('helvetica', 'bold');
+            doc.text(formatearFechaCorta(facturaCompleta.caeVencimiento), 85, yPos + 30);
+        }
+
+        // Footer
+        const footerY = doc.internal.pageSize.getHeight() - 20;
+        doc.setDrawColor(229, 231, 235);
+        doc.line(20, footerY - 10, pageWidth - 20, footerY - 10);
+
+        doc.setFontSize(8);
+        doc.setTextColor(...lightGray);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Documento generado por EasyCheck - Sistema de Gestión de Cabañas', pageWidth / 2, footerY, { align: 'center' });
+        doc.text(`Generado el: ${new Date().toLocaleString('es-AR')}`, pageWidth / 2, footerY + 5, { align: 'center' });
+
+        // Descargar
+        const nombreArchivo = `Factura_${factura.tipoComprobante}_${formatearNumeroComprobante(factura.puntoVenta, factura.numeroComprobante).replace('-', '_')}.pdf`;
+        doc.save(nombreArchivo);
+        showToast('success', 'PDF descargado correctamente');
+    } catch (error) {
+        console.error('Error al generar PDF:', error);
+        showToast('error', 'Error al generar PDF');
+    }
+}
+
+    // Función para imprimir factura
+    async function imprimirFactura(factura) {
+        try {
+            // Obtener detalles completos de la factura con campos fiscales
+            const facturaCompleta = await getFacturaDetalle(factura.id);
+            const doc = new jsPDF();
+            
+            // Usar la misma lógica de generación de PDF pero para imprimir
+            await generarPDF(factura);
+            
+            showToast('success', 'Abriendo diálogo de impresión...');
+            
+            // Crear una nueva instancia del PDF para imprimir
+            setTimeout(() => {
+                window.print();
+            }, 1000);
+        } catch (error) {
+            console.error('Error al imprimir factura:', error);
+            showToast('error', 'Error al preparar factura para impresión');
         }
     }
 
@@ -467,8 +727,77 @@ export default function FacturasPage() {
                                     )}
                                 </div>
                             </div>
-                            <div className="crud-modal-footer">
-                                <button type="button" className="crud-btn-submit" onClick={() => setFacturaSeleccionada(null)}>
+                            <div className="crud-modal-footer" style={{ 
+                                display: 'flex', 
+                                gap: '12px', 
+                                justifyContent: 'center',
+                                padding: '20px',
+                                borderTop: '1px solid #e5e7eb',
+                                backgroundColor: '#f9fafb'
+                            }}>
+                                <button
+                                    type="button"
+                                    onClick={() => generarPDF(facturaSeleccionada)}
+                                    className="crud-btn-action modal-pdf-btn"
+                                    style={{
+                                        padding: '12px 24px',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        backgroundColor: '#10b981',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s ease',
+                                        minWidth: '150px',
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    📥 Descargar PDF
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => imprimirFactura(facturaSeleccionada)}
+                                    className="crud-btn-action modal-print-btn"
+                                    style={{
+                                        padding: '12px 24px',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        backgroundColor: '#3b82f6',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s ease',
+                                        minWidth: '150px',
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    🖨️ Imprimir
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="crud-btn-submit modal-close-btn" 
+                                    onClick={() => setFacturaSeleccionada(null)} 
+                                    style={{ 
+                                        padding: '12px 24px',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        backgroundColor: '#6b7280',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s ease',
+                                        minWidth: '100px'
+                                    }}
+                                >
                                     Cerrar
                                 </button>
                             </div>
