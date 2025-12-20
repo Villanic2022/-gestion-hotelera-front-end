@@ -67,7 +67,7 @@ export default function Register() {
             <div className="auth-brand-panel">
                 <div className="auth-brand-content">
                     <div className="auth-brand-icon">🏡</div>
-                    <h1 className="auth-brand-title">Gestión de Cabañas</h1>
+                    <h1 className="auth-brand-title">EasyCheck</h1>
                     <p className="auth-brand-subtitle">
                         Únete y comienza a administrar tu complejo de cabañas de manera eficiente
                     </p>

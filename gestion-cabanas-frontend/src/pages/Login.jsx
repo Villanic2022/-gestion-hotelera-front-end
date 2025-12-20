@@ -66,7 +66,7 @@ export default function Login() {
             <div className="auth-brand-panel">
                 <div className="auth-brand-content">
                     <div className="auth-brand-icon">🏡</div>
-                    <h1 className="auth-brand-title">Gestión de Cabañas</h1>
+                    <h1 className="auth-brand-title">EasyCheck</h1>
                     <p className="auth-brand-subtitle">
                         Sistema integral para administrar reservas, huéspedes y operaciones de tu complejo de cabañas
                     </p>
