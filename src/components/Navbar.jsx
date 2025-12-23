@@ -1,10 +1,12 @@
 // src/components/Navbar.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import useAuth from "../hooks/useAuth";
 
 export default function Navbar() {
     const navigate = useNavigate();
     const [usuario, setUsuario] = useState("");
+    const { hasRole } = useAuth();
 
     useEffect(() => {
         const u = localStorage.getItem("usuario");
@@ -192,29 +194,59 @@ export default function Navbar() {
                     Reservas
                 </Link>
 
-                <Link
-                    to="/facturas"
-                    style={{
-                        color: "white",
-                        textDecoration: "none",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        padding: "8px 16px",
-                        borderRadius: "8px",
-                        transition: "all 0.2s ease",
-                        backgroundColor: "transparent"
-                    }}
-                    onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                        e.target.style.transform = "translateY(-1px)";
-                    }}
-                    onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = "transparent";
-                        e.target.style.transform = "translateY(0)";
-                    }}
-                >
-                    Facturas
-                </Link>
+                {/* Link de Facturas - Solo ADMIN */}
+                {hasRole("ROLE_ADMIN") && (
+                    <Link
+                        to="/facturas"
+                        style={{
+                            color: "white",
+                            textDecoration: "none",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            padding: "8px 16px",
+                            borderRadius: "8px",
+                            transition: "all 0.2s ease",
+                            backgroundColor: "transparent"
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                            e.target.style.transform = "translateY(-1px)";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "transparent";
+                            e.target.style.transform = "translateY(0)";
+                        }}
+                    >
+                        Facturas
+                    </Link>
+                )}
+
+                {/* Link de Gestión de Usuarios - Solo ADMIN */}
+                {hasRole("ROLE_ADMIN") && (
+                    <Link
+                        to="/usuarios"
+                        style={{
+                            color: "white",
+                            textDecoration: "none",
+                            fontSize: "14px",
+                            fontWeight: "500",
+                            padding: "8px 16px",
+                            borderRadius: "8px",
+                            transition: "all 0.2s ease",
+                            backgroundColor: "transparent"
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                            e.target.style.transform = "translateY(-1px)";
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "transparent";
+                            e.target.style.transform = "translateY(0)";
+                        }}
+                    >
+                        Gestión de Usuarios
+                    </Link>
+                )}
 
                 {/* Usuario + botón salir */}
                 <span style={{

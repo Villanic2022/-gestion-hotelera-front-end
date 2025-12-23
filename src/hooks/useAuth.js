@@ -22,6 +22,7 @@ export default function useAuth() {
         token,
         usuario,
         roles,
+        hasRole: (requiredRole) => roles.includes(requiredRole),
     };
 }
 

@@ -10,6 +10,7 @@ import HabitacionesPage from "./pages/HabitacionesPage";
 import HuespedesPage from "./pages/HuespedesPage";
 import ReservasPage from "./pages/ReservasPage";
 import FacturasPage from "./pages/FacturasPage";
+import UsuariosPage from "./pages/UsuariosPage";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { ToastProvider } from "./context/ToastContext";
@@ -88,8 +89,17 @@ function App() {
           <Route
             path="/facturas"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
                 <FacturasPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/usuarios"
+            element={
+              <ProtectedRoute allowedRoles={["ROLE_ADMIN"]}>
+                <UsuariosPage />
               </ProtectedRoute>
             }
           />
